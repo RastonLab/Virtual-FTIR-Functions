@@ -1,0 +1,3 @@
+#!/home/vanfossen/dev/Virtual-FTIR-Functions/jupyter-notebook/venv/bin/python3
+from numba.pycc import main
+main()
