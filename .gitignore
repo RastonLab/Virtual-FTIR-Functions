@@ -127,3 +127,7 @@ ui-tests/playwright-report
 
 # VSCode
 .vscode
+
+# Custom
+flask/venv
+jupyter-notebook/venv
