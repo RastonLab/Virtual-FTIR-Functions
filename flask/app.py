@@ -14,6 +14,33 @@ CORS(app)
 def ftir():
     return "<h1>ftir</h1>"
 
+@app.route("/fetch_background", methods=["POST"])
+def fetch_background():
+    data = json.loads(request.data)
+    # Need to add Param Check
+    print(calc_spectrum(
+            data["minWave"],
+            data["maxWave"],
+            molecule= None,
+            # isotope="1,2,3",
+            # pressure=data["pressure"],
+            Tgas=294.15,  # hardcode
+            path_length=10,  # hardcode
+            wstep=0.5,  # (cm^-1)
+            verbose=False,  # hides HITRAN output
+            databank="hitran",
+            warnings={"AccuracyError": "ignore"},
+        ))
+    result = ""
+
+    # convert dictionary values to strings and return as JSON
+    return {
+        "success": True,
+        "x": list(result.keys()),
+        "y": [str(flt) for flt in result.values()],
+    }
+
+
 
 @app.route("/post_json", methods=["POST"])
 def process_json():
