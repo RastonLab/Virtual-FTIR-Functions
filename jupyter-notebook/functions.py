@@ -1,7 +1,8 @@
 #%%
 import math, sys
 from decimal import Decimal
-from radis import calc_spectrum, Spectrum
+from radis import calc_spectrum
+from radis import Spectrum
 from warnings import catch_warnings
 
 # NOTE for graphing
@@ -230,11 +231,8 @@ def graph(spectrum):
         ys.append(float(spectrum[key]))
     plt.plot(np.array(xs), np.array(ys), "blue")
     plt.show()
-    return
 
 #%%
-# NOTE: Change back to process_spectrum???
-# def process_spectrum():
 if __name__ == "__main__":
 
     # NOTE for graphing
@@ -327,11 +325,12 @@ if __name__ == "__main__":
         warnings={"AccuracyError": "ignore"},
     )
 
-    s2 = s.get('transmittance_noslit', wunit="nm", Iunit="default")
-    s2 += np.random.normal(0,1,len(s.get_wavelength()))
+    noise = __loadData(s.get('transmittance_noslit', wunit="nm", Iunit="default"))
+    for x in noise:
+        noise[x] = noise[x] + np.random.normal(noise[x],1)
 
-    spectrum = __loadData(s2)
-    # spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
+
+    spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
     # ----- b.) blackbody spectrum of source -----
     spectrum = __sPlanck(spectrum, source_temp)
@@ -359,11 +358,14 @@ if __name__ == "__main__":
         spectrum = __sapphire(spectrum)
         spectrum = __InSb(spectrum)
 
-    # NOTE to graph results
+    graph(spectrum)
+
+    for x in spectrum:
+        spectrum[x] = spectrum[x] * noise[x]
+
     graph(spectrum)
 
     # Turns the dictionary back into a radis Spectrum object
-    # This will allow us to use Radis tools and utils to find peaks
     waverange = []
     vector = []
 
@@ -373,6 +375,8 @@ if __name__ == "__main__":
 
     processed_spec = Spectrum.from_array(np.array(waverange), np.array(vector), 'transmittance_noslit', wunit="nm", Iunit="default")
     
-    #Contextual Version Conflict
+
+    # #Contextual Version Conflict
     spec_u = processed_spec.to_specutils("transmittance_noslit", wunit="nm", Iunit="default")
+
 #%%
