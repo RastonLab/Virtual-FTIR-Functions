@@ -29,7 +29,7 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/vanfossen/dev/Virtual-FTIR-Functions/flask/venv"
+set -gx VIRTUAL_ENV "/home/brennaser/Virtual-FTIR-Functions/flask/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

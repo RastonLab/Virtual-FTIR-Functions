@@ -365,18 +365,18 @@ if __name__ == "__main__":
 
     graph(spectrum)
 
-    # Turns the dictionary back into a radis Spectrum object
-    waverange = []
-    vector = []
+    # # Turns the dictionary back into a radis Spectrum object
+    # waverange = []
+    # vector = []
 
-    for x in spectrum:
-        waverange.append(x)
-        vector.append(spectrum[x])
+    # for x in spectrum:
+    #     waverange.append(x)
+    #     vector.append(spectrum[x])
 
-    processed_spec = Spectrum.from_array(np.array(waverange), np.array(vector), 'transmittance_noslit', wunit="nm", Iunit="default")
+    # processed_spec = Spectrum.from_array(np.array(waverange), np.array(vector), 'transmittance_noslit', wunit="nm", Iunit="default")
     
 
     # #Contextual Version Conflict
-    spec_u = processed_spec.to_specutils("transmittance_noslit", wunit="nm", Iunit="default")
+    # spec_u = processed_spec.to_specutils("transmittance_noslit", wunit="nm", Iunit="default")
 
 #%%

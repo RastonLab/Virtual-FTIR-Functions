@@ -208,7 +208,7 @@ def __InSb(data):
         ) + (3.3e10) / (2.44977 * math.sqrt(math.pi / (4 * math.log(2)))) * math.exp(
             -4 * math.log(2) * ((x_um - 5) ** 2) / (2.44977**2)
         )
-        data[x] = datapoint * data[x]
+        data[x] = (datapoint + np.random.normal(0, 200000000)) * data[x]
 
     return data
 
@@ -229,7 +229,7 @@ def __MCT(data):
             / (2 * math.sqrt(math.pi / (4 * math.log(2))))
             * math.exp(-4 * math.log(2) * ((x_um - 18.6) ** 2) / (2**2))
         )
-        data[x] = datapoint * data[x]
+        data[x] = (datapoint + np.random.normal(0, 20000000)) * data[x]
 
     return data
 
@@ -318,6 +318,11 @@ def __generate_spectra(data):
     except:
         return False
 
+    noise = __loadData(s.get('transmittance_noslit', wunit="nm", Iunit="default"))
+    for x in noise:
+        noise[x] = noise[x] + np.random.normal(0,1)
+
+
     spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
     # ----- b.) blackbody spectrum of source -----
@@ -349,8 +354,12 @@ def __generate_spectra(data):
         spectrum = __sapphire(spectrum)
         spectrum = __InSb(spectrum)
 
+    # Add noise to Processed Spectrum
+    # for x in spectrum:
+    #     spectrum[x] = spectrum[x] + noise[x]
+
     return spectrum
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
