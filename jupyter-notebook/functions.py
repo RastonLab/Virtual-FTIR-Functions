@@ -2,6 +2,7 @@
 import math, sys
 from decimal import Decimal
 from radis import calc_spectrum
+from radis import Spectrum
 from warnings import catch_warnings
 
 # NOTE for graphing
@@ -222,10 +223,16 @@ def __sPlanck(spectrum, temp):
 
     return spectrum
 
+def graph(spectrum):
+    xs = []
+    ys = []
+    for key in spectrum:
+        xs.append(float(key))
+        ys.append(float(spectrum[key]))
+    plt.plot(np.array(xs), np.array(ys), "blue")
+    plt.show()
 
 #%%
-# NOTE: Change back to process_spectrum???
-# def process_spectrum():
 if __name__ == "__main__":
 
     # NOTE for graphing
@@ -318,25 +325,15 @@ if __name__ == "__main__":
         warnings={"AccuracyError": "ignore"},
     )
 
-    spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
+    noise = __loadData(s.get('transmittance_noslit', wunit="nm", Iunit="default"))
+    for x in noise:
+        noise[x] = noise[x] + np.random.normal(noise[x],1)
 
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
+
+    spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
     # ----- b.) blackbody spectrum of source -----
     spectrum = __sPlanck(spectrum, source_temp)
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
 
     # ----- c.) transmission spectrum of windows/beamsplitter -----
     # Beamsplitter
@@ -344,14 +341,6 @@ if __name__ == "__main__":
         spectrum = __AR_ZnSe(spectrum)
     elif beamsplitter == "AR_CaF2":
         spectrum = __AR_CaF2(spectrum)
-
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
 
     # Cell Windows
     if cell_window == "CaF2":
@@ -361,14 +350,6 @@ if __name__ == "__main__":
         spectrum = __ZnSe(spectrum)
         spectrum = __ZnSe(spectrum)
 
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
-
     # ----- d.) detector response spectrum -----
     if detector == "MCT":
         spectrum = __ZnSe(spectrum)
@@ -377,12 +358,25 @@ if __name__ == "__main__":
         spectrum = __sapphire(spectrum)
         spectrum = __InSb(spectrum)
 
-    # NOTE to graph results
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
+    graph(spectrum)
+
+    for x in spectrum:
+        spectrum[x] = spectrum[x] * noise[x]
+
+    graph(spectrum)
+
+    # Turns the dictionary back into a radis Spectrum object
+    waverange = []
+    vector = []
+
+    for x in spectrum:
+        waverange.append(x)
+        vector.append(spectrum[x])
+
+    processed_spec = Spectrum.from_array(np.array(waverange), np.array(vector), 'transmittance_noslit', wunit="nm", Iunit="default")
+    
+
+    # #Contextual Version Conflict
+    spec_u = processed_spec.to_specutils("transmittance_noslit", wunit="nm", Iunit="default")
+
 #%%
