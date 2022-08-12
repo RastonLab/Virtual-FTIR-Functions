@@ -14,6 +14,33 @@ CORS(app)
 def ftir():
     return "<h1>ftir</h1>"
 
+@app.route("/fetch_background", methods=["POST"])
+def fetch_background():
+    data = json.loads(request.data)
+    # Need to add Param Check
+    print(calc_spectrum(
+            data["minWave"],
+            data["maxWave"],
+            molecule= None,
+            # isotope="1,2,3",
+            # pressure=data["pressure"],
+            Tgas=294.15,  # hardcode
+            path_length=10,  # hardcode
+            wstep=0.5,  # (cm^-1)
+            verbose=False,  # hides HITRAN output
+            databank="hitran",
+            warnings={"AccuracyError": "ignore"},
+        ))
+    result = ""
+
+    # convert dictionary values to strings and return as JSON
+    return {
+        "success": True,
+        "x": list(result.keys()),
+        "y": [str(flt) for flt in result.values()],
+    }
+
+
 
 @app.route("/post_json", methods=["POST"])
 def process_json():
@@ -57,7 +84,6 @@ def process_json():
 
 
 def __KBr(data):
-
     if data == None:
         return False
 
@@ -69,7 +95,6 @@ def __KBr(data):
 
 
 def __CaF2(data):
-
     if data == None:
         return False
 
@@ -81,7 +106,6 @@ def __CaF2(data):
 
 
 def __ZnSe(data):
-
     if data == None:
         return False
 
@@ -98,7 +122,6 @@ def __ZnSe(data):
 
 
 def __sapphire(data):
-
     if data == None:
         return False
 
@@ -115,7 +138,6 @@ def __sapphire(data):
 
 
 def __AR_ZnSe(data):
-
     if data == None:
         return False
 
@@ -158,7 +180,6 @@ def __AR_ZnSe(data):
 
 
 def __AR_CaF2(data):
-
     if data == None:
         return False
 
@@ -197,7 +218,6 @@ def __AR_CaF2(data):
 
 
 def __InSb(data):
-
     if data == None:
         return False
 
@@ -208,13 +228,12 @@ def __InSb(data):
         ) + (3.3e10) / (2.44977 * math.sqrt(math.pi / (4 * math.log(2)))) * math.exp(
             -4 * math.log(2) * ((x_um - 5) ** 2) / (2.44977**2)
         )
-        data[x] = datapoint * data[x]
+        data[x] = (datapoint + np.random.normal(0, 200000000)) * data[x]
 
     return data
 
 
 def __MCT(data):
-
     if data == None:
         return False
 
@@ -229,7 +248,7 @@ def __MCT(data):
             / (2 * math.sqrt(math.pi / (4 * math.log(2))))
             * math.exp(-4 * math.log(2) * ((x_um - 18.6) ** 2) / (2**2))
         )
-        data[x] = datapoint * data[x]
+        data[x] = (datapoint + np.random.normal(0, 20000000)) * data[x]
 
     return data
 
@@ -298,8 +317,64 @@ def __param_check(data):
             return "Error with key: %s. Value is: %s" % (key, value)
 
 
+def __calc_wstep(resolution, zero_fill):
+    
+    wstep = 0
+
+    if resolution == 1:
+
+        if zero_fill == 0:
+            wstep = 0.481927711
+        elif zero_fill == 1:
+            wstep = 0.240963855
+        elif zero_fill == 2:
+            wstep = 0.120481928
+
+    elif resolution == 0.5:
+
+        if zero_fill == 0:
+            wstep = 0.240963855
+        elif zero_fill == 1:
+            wstep = 0.120481928
+        elif zero_fill == 2:
+            wstep = 0.060240964
+
+    elif resolution == 0.25:
+
+        if zero_fill == 0:
+            wstep = 0.120481928
+        elif zero_fill == 1:
+            wstep = 0.060240964
+        elif zero_fill == 2:
+            wstep = 0.030120482
+
+    elif resolution == 0.125:
+
+        if zero_fill == 0:
+            wstep = 0.060240964
+        elif zero_fill == 1:
+            wstep = 0.030120482
+        elif zero_fill == 2:
+            wstep = 0.015060241
+
+    elif resolution == 0.0625:
+
+        if zero_fill == 0:
+            wstep = 0.030120482
+        elif zero_fill == 1:
+            wstep = 0.015060241
+        elif zero_fill == 2:
+            wstep = 0.00753012
+
+    if wstep == 0:
+        # return error
+        print(3)
+
+    return wstep
+
 def __generate_spectra(data):
     try:
+        wstep = __calc_wstep(data["resolution"], data["zeroFill"])
         # ----- a.) transmission spectrum of gas sample -----
         # https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
         s = calc_spectrum(
@@ -310,13 +385,17 @@ def __generate_spectra(data):
             pressure=data["pressure"],
             Tgas=294.15,  # hardcode
             path_length=10,  # hardcode
-            wstep=0.5,  # (cm^-1)
+            wstep=wstep,  # (cm^-1)
             verbose=False,  # hides HITRAN output
             databank="hitran",
             warnings={"AccuracyError": "ignore"},
         )
     except:
         return False
+
+    noise = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
+    for x in noise:
+        noise[x] = noise[x] + np.random.normal(0, 1)
 
     spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
@@ -353,4 +432,4 @@ def __generate_spectra(data):
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)

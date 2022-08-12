@@ -1,8 +1,7 @@
 #%%
-import math, sys
+import math
 from decimal import Decimal
-from radis import calc_spectrum
-from warnings import catch_warnings
+from radis import calc_spectrum, Spectrum
 
 # NOTE for graphing
 import numpy as np
@@ -18,7 +17,6 @@ def __error(error_text):
 
 
 def __loadData(s):
-
     data = {}
 
     for key, val in zip(s[0], s[1]):
@@ -28,7 +26,6 @@ def __loadData(s):
 
 
 def __KBr(data):
-
     if data == None:
         return False
 
@@ -40,7 +37,6 @@ def __KBr(data):
 
 
 def __CaF2(data):
-
     if data == None:
         return False
 
@@ -52,7 +48,6 @@ def __CaF2(data):
 
 
 def __ZnSe(data):
-
     if data == None:
         return False
 
@@ -69,7 +64,6 @@ def __ZnSe(data):
 
 
 def __sapphire(data):
-
     if data == None:
         return False
 
@@ -86,7 +80,6 @@ def __sapphire(data):
 
 
 def __AR_ZnSe(data):
-
     if data == None:
         return False
 
@@ -129,7 +122,6 @@ def __AR_ZnSe(data):
 
 
 def __AR_CaF2(data):
-
     if data == None:
         return False
 
@@ -168,7 +160,6 @@ def __AR_CaF2(data):
 
 
 def __InSb(data):
-
     if data == None:
         return False
 
@@ -179,13 +170,13 @@ def __InSb(data):
         ) + (3.3e10) / (2.44977 * math.sqrt(math.pi / (4 * math.log(2)))) * math.exp(
             -4 * math.log(2) * ((x_um - 5) ** 2) / (2.44977**2)
         )
-        data[x] = datapoint * data[x]
+        # add noise to InSb
+        data[x] = (datapoint + np.random.normal(0, 200000000)) * data[x]
 
     return data
 
 
 def __MCT(data):
-
     if data == None:
         return False
 
@@ -200,7 +191,8 @@ def __MCT(data):
             / (2 * math.sqrt(math.pi / (4 * math.log(2))))
             * math.exp(-4 * math.log(2) * ((x_um - 18.6) ** 2) / (2**2))
         )
-        data[x] = datapoint * data[x]
+        # add noise to MCT
+        data[x] = (datapoint + np.random.normal(0, 20000000)) * data[x]
 
     return data
 
@@ -223,19 +215,17 @@ def __sPlanck(spectrum, temp):
     return spectrum
 
 
-#%%
-# NOTE: Change back to process_spectrum???
-# def process_spectrum():
-if __name__ == "__main__":
+def graph(spectrum):
+    xs = []
+    ys = []
+    for key in spectrum:
+        xs.append(float(key))
+        ys.append(float(spectrum[key]))
+    plt.plot(np.array(xs), np.array(ys), "blue")
+    plt.show()
 
-    # NOTE for graphing
-    source = "t"
-    min_wavenum = 1900
-    max_wavenum = 2300
-    beamsplitter = "AR_ZnSe"
-    cell_window = "CaF2"
-    detector = "MCT"
 
+def check_params(source, min_wavenum, max_wavenum, beamsplitter, cell_window, detector):
     # check if source is correct (t or g)
     if (source != "t") and (source != "g"):
         __error("  source needs to be <t> or <g>. provided source: %s" % (source))
@@ -302,11 +292,36 @@ if __name__ == "__main__":
         )
     )
 
+    return source_temp
+
+
+#%%
+if __name__ == "__main__":
+    # NOTE for graphing
+    source = "t"
+    min_wavenum = 1900
+    max_wavenum = 2300
+    beamsplitter = "AR_ZnSe"
+    cell_window = "CaF2"
+    detector = "MCT"
+
+    # check params
+    source_temp = check_params(
+        source,
+        min_wavenum,
+        max_wavenum,
+        beamsplitter,
+        cell_window,
+        detector,
+    )
+
+    print(source_temp)
+
     # ----- a.) transmission spectrum of gas sample -----
     # https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
     s = calc_spectrum(
-        min_wavenum,  # wmin minimum wavelength (nm - 800)
-        max_wavenum,  # wmax maximum wavelength (nm - 250000)
+        min_wavenum,
+        max_wavenum,
         molecule="CO",
         isotope="1,2,3",
         pressure=0.01,  # bar
@@ -318,25 +333,16 @@ if __name__ == "__main__":
         warnings={"AccuracyError": "ignore"},
     )
 
-    spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
+    # generate spectrum with noise
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
+    noise = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
+    for x in noise:
+        noise[x] = noise[x] + np.random.normal(0, 1)
 
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
+    spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
     # ----- b.) blackbody spectrum of source -----
     spectrum = __sPlanck(spectrum, source_temp)
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
 
     # ----- c.) transmission spectrum of windows/beamsplitter -----
     # Beamsplitter
@@ -344,14 +350,6 @@ if __name__ == "__main__":
         spectrum = __AR_ZnSe(spectrum)
     elif beamsplitter == "AR_CaF2":
         spectrum = __AR_CaF2(spectrum)
-
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
 
     # Cell Windows
     if cell_window == "CaF2":
@@ -361,14 +359,6 @@ if __name__ == "__main__":
         spectrum = __ZnSe(spectrum)
         spectrum = __ZnSe(spectrum)
 
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
-
     # ----- d.) detector response spectrum -----
     if detector == "MCT":
         spectrum = __ZnSe(spectrum)
@@ -377,12 +367,42 @@ if __name__ == "__main__":
         spectrum = __sapphire(spectrum)
         spectrum = __InSb(spectrum)
 
-    # NOTE to graph results
-    xs = []
-    ys = []
-    for key in spectrum:
-        xs.append(float(key))
-        ys.append(float(spectrum[key]))
-    plt.plot(np.array(xs), np.array(ys), "blue")
-    plt.show()
+    graph(spectrum)
+
+    # Turns the dictionary back into a radis Spectrum object
+    waverange = []
+    vector = []
+
+    for x in spectrum:
+        waverange.append(x)
+        vector.append(spectrum[x])
+
+    # TODO --> does not work, potential fix: https://github.com/radis/radis/pull/499
+    # processed_spec = Spectrum.from_array(
+    #     np.array(waverange),
+    #     np.array(vector),
+    #     "transmittance_noslit",
+    #     wunit="nm",
+    #     Iunit="nm",
+    # )
+    # # find peaks in spectrum
+    # # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.to_specutils
+    # spec_u = processed_spec.to_specutils(
+    #     "transmittance_noslit", wunit="nm", Iunit="default"
+    # )
+
+    # TODO --> potential working solution (does not throw error in dev branch as of 8/12/2022):
+    # processed_spec = Spectrum.from_array(
+    #     np.array(waverange),
+    #     np.array(vector),
+    #     "transmittance_noslit",
+    #     wunit="nm",
+    #     Iunit="",
+    # )
+    # # find peaks in spectrum
+    # # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.to_specutils
+    # spec_u = processed_spec.to_specutils(
+    #     "transmittance_noslit", wunit="nm_vac", Iunit="default"
+    # )
+
 #%%
