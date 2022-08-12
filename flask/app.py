@@ -14,6 +14,33 @@ CORS(app)
 def ftir():
     return "<h1>ftir</h1>"
 
+@app.route("/fetch_background", methods=["POST"])
+def fetch_background():
+    data = json.loads(request.data)
+    # Need to add Param Check
+    print(calc_spectrum(
+            data["minWave"],
+            data["maxWave"],
+            molecule= None,
+            # isotope="1,2,3",
+            # pressure=data["pressure"],
+            Tgas=294.15,  # hardcode
+            path_length=10,  # hardcode
+            wstep=0.5,  # (cm^-1)
+            verbose=False,  # hides HITRAN output
+            databank="hitran",
+            warnings={"AccuracyError": "ignore"},
+        ))
+    result = ""
+
+    # convert dictionary values to strings and return as JSON
+    return {
+        "success": True,
+        "x": list(result.keys()),
+        "y": [str(flt) for flt in result.values()],
+    }
+
+
 
 @app.route("/post_json", methods=["POST"])
 def process_json():
@@ -290,8 +317,64 @@ def __param_check(data):
             return "Error with key: %s. Value is: %s" % (key, value)
 
 
+def __calc_wstep(resolution, zero_fill):
+    
+    wstep = 0
+
+    if resolution == 1:
+
+        if zero_fill == 0:
+            wstep = 0.481927711
+        elif zero_fill == 1:
+            wstep = 0.240963855
+        elif zero_fill == 2:
+            wstep = 0.120481928
+
+    elif resolution == 0.5:
+
+        if zero_fill == 0:
+            wstep = 0.240963855
+        elif zero_fill == 1:
+            wstep = 0.120481928
+        elif zero_fill == 2:
+            wstep = 0.060240964
+
+    elif resolution == 0.25:
+
+        if zero_fill == 0:
+            wstep = 0.120481928
+        elif zero_fill == 1:
+            wstep = 0.060240964
+        elif zero_fill == 2:
+            wstep = 0.030120482
+
+    elif resolution == 0.125:
+
+        if zero_fill == 0:
+            wstep = 0.060240964
+        elif zero_fill == 1:
+            wstep = 0.030120482
+        elif zero_fill == 2:
+            wstep = 0.015060241
+
+    elif resolution == 0.0625:
+
+        if zero_fill == 0:
+            wstep = 0.030120482
+        elif zero_fill == 1:
+            wstep = 0.015060241
+        elif zero_fill == 2:
+            wstep = 0.00753012
+
+    if wstep == 0:
+        # return error
+        print(3)
+
+    return wstep
+
 def __generate_spectra(data):
     try:
+        wstep = __calc_wstep(data["resolution"], data["zeroFill"])
         # ----- a.) transmission spectrum of gas sample -----
         # https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
         s = calc_spectrum(
@@ -302,7 +385,7 @@ def __generate_spectra(data):
             pressure=data["pressure"],
             Tgas=294.15,  # hardcode
             path_length=10,  # hardcode
-            wstep=0.5,  # (cm^-1)
+            wstep=wstep,  # (cm^-1)
             verbose=False,  # hides HITRAN output
             databank="hitran",
             warnings={"AccuracyError": "ignore"},
