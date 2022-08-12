@@ -1,9 +1,7 @@
 #%%
-import math, sys
+import math
 from decimal import Decimal
-from radis import calc_spectrum
-from radis import Spectrum
-from warnings import catch_warnings
+from radis import calc_spectrum, Spectrum
 
 # NOTE for graphing
 import numpy as np
@@ -19,7 +17,6 @@ def __error(error_text):
 
 
 def __loadData(s):
-
     data = {}
 
     for key, val in zip(s[0], s[1]):
@@ -29,7 +26,6 @@ def __loadData(s):
 
 
 def __KBr(data):
-
     if data == None:
         return False
 
@@ -41,7 +37,6 @@ def __KBr(data):
 
 
 def __CaF2(data):
-
     if data == None:
         return False
 
@@ -53,7 +48,6 @@ def __CaF2(data):
 
 
 def __ZnSe(data):
-
     if data == None:
         return False
 
@@ -70,7 +64,6 @@ def __ZnSe(data):
 
 
 def __sapphire(data):
-
     if data == None:
         return False
 
@@ -87,7 +80,6 @@ def __sapphire(data):
 
 
 def __AR_ZnSe(data):
-
     if data == None:
         return False
 
@@ -130,7 +122,6 @@ def __AR_ZnSe(data):
 
 
 def __AR_CaF2(data):
-
     if data == None:
         return False
 
@@ -169,7 +160,6 @@ def __AR_CaF2(data):
 
 
 def __InSb(data):
-
     if data == None:
         return False
 
@@ -186,7 +176,6 @@ def __InSb(data):
 
 
 def __MCT(data):
-
     if data == None:
         return False
 
@@ -234,17 +223,7 @@ def graph(spectrum):
     plt.show()
 
 
-#%%
-if __name__ == "__main__":
-
-    # NOTE for graphing
-    source = "t"
-    min_wavenum = 1900
-    max_wavenum = 2300
-    beamsplitter = "AR_ZnSe"
-    cell_window = "CaF2"
-    detector = "MCT"
-
+def check_params(source, min_wavenum, max_wavenum, beamsplitter, cell_window, detector):
     # check if source is correct (t or g)
     if (source != "t") and (source != "g"):
         __error("  source needs to be <t> or <g>. provided source: %s" % (source))
@@ -311,6 +290,31 @@ if __name__ == "__main__":
         )
     )
 
+    return source_temp
+
+
+#%%
+if __name__ == "__main__":
+    # NOTE for graphing
+    source = "t"
+    min_wavenum = 1900
+    max_wavenum = 2300
+    beamsplitter = "AR_ZnSe"
+    cell_window = "CaF2"
+    detector = "MCT"
+
+    # check params
+    source_temp = check_params(
+        source,
+        min_wavenum,
+        max_wavenum,
+        beamsplitter,
+        cell_window,
+        detector,
+    )
+
+    print(source_temp)
+
     # ----- a.) transmission spectrum of gas sample -----
     # https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
     s = calc_spectrum(
@@ -319,9 +323,9 @@ if __name__ == "__main__":
         molecule="CO",
         isotope="1,2,3",
         pressure=0.01,  # bar
-        Tgas=294.15,    # K
-        path_length=10, # cm
-        wstep=0.5,      # cm^-1
+        Tgas=294.15,  # K
+        path_length=10,  # cm
+        wstep=0.5,  # cm^-1
         verbose=False,  # hides HITRAN output
         databank="hitran",
         warnings={"AccuracyError": "ignore"},
@@ -376,18 +380,32 @@ if __name__ == "__main__":
         waverange.append(x)
         vector.append(spectrum[x])
 
-    processed_spec = Spectrum.from_array(
-        np.array(waverange),
-        np.array(vector),
-        "transmittance_noslit",
-        wunit="nm",
-        Iunit="nm",
-    )
+    # TODO --> does not work, potential fix: https://github.com/radis/radis/pull/499
+    # processed_spec = Spectrum.from_array(
+    #     np.array(waverange),
+    #     np.array(vector),
+    #     "transmittance_noslit",
+    #     wunit="nm",
+    #     Iunit="nm",
+    # )
+    # # find peaks in spectrum
+    # # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.to_specutils
+    # spec_u = processed_spec.to_specutils(
+    #     "transmittance_noslit", wunit="nm", Iunit="default"
+    # )
 
-    # find peaks in spectrum
-    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.to_specutils
-    spec_u = processed_spec.to_specutils(
-        "transmittance_noslit", wunit="nm", Iunit="default"
-    )
+    # TODO --> potential working solution (does not throw error in dev branch as of 8/12/2022):
+    # processed_spec = Spectrum.from_array(
+    #     np.array(waverange),
+    #     np.array(vector),
+    #     "transmittance_noslit",
+    #     wunit="nm",
+    #     Iunit="",
+    # )
+    # # find peaks in spectrum
+    # # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.to_specutils
+    # spec_u = processed_spec.to_specutils(
+    #     "transmittance_noslit", wunit="nm_vac", Iunit="default"
+    # )
 
 #%%
