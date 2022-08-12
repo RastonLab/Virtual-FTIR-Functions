@@ -223,6 +223,7 @@ def __sPlanck(spectrum, temp):
 
     return spectrum
 
+
 def graph(spectrum):
     xs = []
     ys = []
@@ -231,6 +232,7 @@ def graph(spectrum):
         ys.append(float(spectrum[key]))
     plt.plot(np.array(xs), np.array(ys), "blue")
     plt.show()
+
 
 #%%
 if __name__ == "__main__":
@@ -312,23 +314,24 @@ if __name__ == "__main__":
     # ----- a.) transmission spectrum of gas sample -----
     # https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
     s = calc_spectrum(
-        min_wavenum,  # wmin minimum wavelength (nm - 800)
-        max_wavenum,  # wmax maximum wavelength (nm - 250000)
+        min_wavenum,
+        max_wavenum,
         molecule="CO",
         isotope="1,2,3",
         pressure=0.01,  # bar
-        Tgas=294.15,  # K
-        path_length=10,  # cm
-        wstep=0.5,  # cm^-1
+        Tgas=294.15,    # K
+        path_length=10, # cm
+        wstep=0.5,      # cm^-1
         verbose=False,  # hides HITRAN output
         databank="hitran",
         warnings={"AccuracyError": "ignore"},
     )
 
-    noise = __loadData(s.get('transmittance_noslit', wunit="nm", Iunit="default"))
+    # add noise to program
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
+    noise = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
     for x in noise:
-        noise[x] = noise[x] + np.random.normal(noise[x],1)
-
+        noise[x] = noise[x] + np.random.normal(noise[x], 1)
 
     spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
@@ -365,18 +368,26 @@ if __name__ == "__main__":
 
     graph(spectrum)
 
-    # # Turns the dictionary back into a radis Spectrum object
-    # waverange = []
-    # vector = []
+    # Turns the dictionary back into a radis Spectrum object
+    waverange = []
+    vector = []
 
-    # for x in spectrum:
-    #     waverange.append(x)
-    #     vector.append(spectrum[x])
+    for x in spectrum:
+        waverange.append(x)
+        vector.append(spectrum[x])
 
-    # processed_spec = Spectrum.from_array(np.array(waverange), np.array(vector), 'transmittance_noslit', wunit="nm", Iunit="default")
-    
+    processed_spec = Spectrum.from_array(
+        np.array(waverange),
+        np.array(vector),
+        "transmittance_noslit",
+        wunit="nm",
+        Iunit="nm",
+    )
 
-    # #Contextual Version Conflict
-    # spec_u = processed_spec.to_specutils("transmittance_noslit", wunit="nm", Iunit="default")
+    # find peaks in spectrum
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.to_specutils
+    spec_u = processed_spec.to_specutils(
+        "transmittance_noslit", wunit="nm", Iunit="default"
+    )
 
 #%%
