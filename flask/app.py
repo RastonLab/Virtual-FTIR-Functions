@@ -366,10 +366,6 @@ def __calc_wstep(resolution, zero_fill):
         elif zero_fill == 2:
             wstep = 0.00753012
 
-    if wstep == 0:
-        # return error
-        print(3)
-
     return wstep
 
 def __generate_spectra(data):
@@ -393,40 +389,42 @@ def __generate_spectra(data):
     except:
         return False
 
-    noise = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
-    for x in noise:
-        noise[x] = noise[x] + np.random.normal(0, 1)
-
     spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
-    # ----- b.) blackbody spectrum of source -----
-
+        # ----- b.) blackbody spectrum of source -----
     spectrum = __sPlanck(spectrum, data["source"])
 
-    # ----- c.) transmission spectrum of windows/beamsplitter -----
+        # ----- c.) transmission spectrum of windows/beamsplitter -----
+    for x in range(data["numScan"]):
+        print(x)
 
-    # Beamsplitter
-    if data["beamsplitter"] == "AR_ZnSe":
-        spectrum = __AR_ZnSe(spectrum)
-    elif data["beamsplitter"] == "AR_CaF2":
-        spectrum = __AR_CaF2(spectrum)
+        # Beamsplitter
+        if data["beamsplitter"] == "AR_ZnSe":
+            spectrum = __AR_ZnSe(spectrum)
+        elif data["beamsplitter"] == "AR_CaF2":
+            spectrum = __AR_CaF2(spectrum)
 
-    # Cell Windows
-    if data["cellWindow"] == "CaF2":
-        spectrum = __CaF2(spectrum)
-        spectrum = __CaF2(spectrum)
-    elif data["cellWindow"] == "ZnSe":
-        spectrum = __ZnSe(spectrum)
-        spectrum = __ZnSe(spectrum)
+        # Cell Windows
+        if data["cellWindow"] == "CaF2":
+            spectrum = __CaF2(spectrum)
+            spectrum = __CaF2(spectrum)
+        elif data["cellWindow"] == "ZnSe":
+            spectrum = __ZnSe(spectrum)
+            spectrum = __ZnSe(spectrum)
 
-    # ----- d.) detector response spectrum -----
+        # ----- d.) detector response spectrum -----
 
-    if data["detector"] == "MCT":
-        spectrum = __ZnSe(spectrum)
-        spectrum = __MCT(spectrum)
-    elif data["detector"] == "InSb":
-        spectrum = __sapphire(spectrum)
-        spectrum = __InSb(spectrum)
+        if data["detector"] == "MCT":
+            spectrum = __ZnSe(spectrum)
+            spectrum = __MCT(spectrum)
+        elif data["detector"] == "InSb":
+            spectrum = __sapphire(spectrum)
+            spectrum = __InSb(spectrum)
+
+        # Normalize
+        factor = 1/sum(spectrum.values())
+        for i in spectrum:
+            spectrum[i] = spectrum[i] * factor
 
     return spectrum
 
