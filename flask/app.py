@@ -366,10 +366,6 @@ def __calc_wstep(resolution, zero_fill):
         elif zero_fill == 2:
             wstep = 0.00753012
 
-    if wstep == 0:
-        # return error
-        print(3)
-
     return wstep
 
 def __generate_spectra(data):
