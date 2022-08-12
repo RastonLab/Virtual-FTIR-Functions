@@ -57,7 +57,6 @@ def process_json():
 
 
 def __KBr(data):
-
     if data == None:
         return False
 
@@ -69,7 +68,6 @@ def __KBr(data):
 
 
 def __CaF2(data):
-
     if data == None:
         return False
 
@@ -81,7 +79,6 @@ def __CaF2(data):
 
 
 def __ZnSe(data):
-
     if data == None:
         return False
 
@@ -98,7 +95,6 @@ def __ZnSe(data):
 
 
 def __sapphire(data):
-
     if data == None:
         return False
 
@@ -115,7 +111,6 @@ def __sapphire(data):
 
 
 def __AR_ZnSe(data):
-
     if data == None:
         return False
 
@@ -158,7 +153,6 @@ def __AR_ZnSe(data):
 
 
 def __AR_CaF2(data):
-
     if data == None:
         return False
 
@@ -197,7 +191,6 @@ def __AR_CaF2(data):
 
 
 def __InSb(data):
-
     if data == None:
         return False
 
@@ -214,7 +207,6 @@ def __InSb(data):
 
 
 def __MCT(data):
-
     if data == None:
         return False
 
@@ -318,10 +310,9 @@ def __generate_spectra(data):
     except:
         return False
 
-    noise = __loadData(s.get('transmittance_noslit', wunit="nm", Iunit="default"))
+    noise = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
     for x in noise:
-        noise[x] = noise[x] + np.random.normal(0,1)
-
+        noise[x] = noise[x] + np.random.normal(0, 1)
 
     spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
@@ -353,10 +344,6 @@ def __generate_spectra(data):
     elif data["detector"] == "InSb":
         spectrum = __sapphire(spectrum)
         spectrum = __InSb(spectrum)
-
-    # Add noise to Processed Spectrum
-    # for x in spectrum:
-    #     spectrum[x] = spectrum[x] + noise[x]
 
     return spectrum
 
