@@ -2,16 +2,14 @@ from flask import Flask, request
 from flask_cors import CORS
 from radis import calc_spectrum, Spectrum, SerialSlabs
 from radis.spectrum.operations import add_array, multiply
-<<<<<<< HEAD
+
 from specutils import SpectralRegion
 from specutils.manipulation import noise_region_uncertainty
 from specutils.fitting import find_lines_threshold, find_lines_derivative
 import astropy.units as u
-=======
->>>>>>> cd382792a3afd0429de8d48436cdc52026159534
+
 
 import json
-import math
 import numpy as np
 
 app = Flask(__name__)
@@ -482,7 +480,7 @@ def __generate_spectra(data):
         factor = 1 / sum(numbers.values())
 
         spectrum = multiply(spectrum, factor, var="transmittance_noslit")
-<<<<<<< HEAD
+
 
     # NOTE: Hardcoded for now, might? need user parameters and likely its own function
     find_peaks = spectrum.to_specutils()
@@ -491,8 +489,6 @@ def __generate_spectra(data):
     lines = find_lines_threshold(find_peaks, noise_factor=6)
     print()
     print(lines)
-=======
->>>>>>> cd382792a3afd0429de8d48436cdc52026159534
 
     return __loadData(spectrum.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
