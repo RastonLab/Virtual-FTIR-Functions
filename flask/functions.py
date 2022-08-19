@@ -219,6 +219,16 @@ def __sPlanck(spectrum, temp):
 # ---------- helper functions ----------
 # ------------------------------------
 def __loadData(s):
+    '''
+    Takes a spectrum and converts its data to a dictionary of x and y values.
+
+            Parameters:
+                s (Spectrum): The spectrum to convert
+            
+            Returns:
+                A dictionary of x (key) and y (value) values
+    '''
+
     data = {}
 
     for key, val in zip(s[0], s[1]):
@@ -228,6 +238,16 @@ def __loadData(s):
 
 
 def __param_check(data):
+    '''
+    Checks user given parameters and makes sure they are vaild.
+
+        Parameters:
+            data (dict): the user given parameters
+
+        Returns:
+            Good if params are good. Else, returns an error message
+    '''
+
     print("----- check number of keys -----")
     if len(data) == 11:
         print("  good!")
@@ -262,6 +282,16 @@ def __param_check(data):
 
 
 def __calc_wstep(resolution, zero_fill):
+    '''
+    Calculates the apropriate wstep for a spectrum based on the given resolution and zero fill.
+
+        Parameters:
+            resolution (int): the given resolution
+            xero_fill (int): the given zero fill
+
+        Returns:
+            The calculated wstep
+    '''
 
     wstep = 0
 
@@ -311,6 +341,10 @@ def __calc_wstep(resolution, zero_fill):
             wstep = 0.00753012
 
     return wstep
+
+# ------------------------------
+# ----- Spectra Processing -----
+# ------------------------------
 
 def __process_spectra(data, s, find_peaks):
 
