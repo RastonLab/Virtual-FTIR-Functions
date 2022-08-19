@@ -443,12 +443,12 @@ def __process_spectra(data, s, find_peaks):
             spectrum = SerialSlabs(spectrum, spec_InSb)
 
         # Normalize data
-        numbers = __loadData(
-            spectrum.get("transmittance_noslit", wunit="nm", Iunit="default")
-        )
-        factor = 1 / sum(numbers.values())
+        # numbers = __loadData(
+        #     spectrum.get("transmittance_noslit", wunit="nm", Iunit="default")
+        # )
+        # factor = 1 / sum(numbers.values())
 
-        spectrum = multiply(spectrum, factor, var="transmittance_noslit")
+        # spectrum = multiply(spectrum, factor, var="transmittance_noslit")
 
     # Post-processing - Find Peaks
     # Not done on background samples
