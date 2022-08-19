@@ -620,9 +620,7 @@ def __generate_background(data):
         name="CaF2 window",
     )
 
-    print("before")
     spectrum = SerialSlabs(spec_zeroY, spec_sPlanck)
-    print("after")
 
     # ----- c.) transmission spectrum of windows/beamsplitter -----
     for x in range(data["numScan"]):
