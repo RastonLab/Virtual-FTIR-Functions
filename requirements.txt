@@ -1,0 +1,8 @@
+# used by both flask and jupyter-notebook
+numpy==1.22.3
+radis
+specutils
+
+# used by flask
+flask
+flask-cors

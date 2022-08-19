@@ -12,4 +12,6 @@ This directory holds a Jupyter Notebook that was used in the testing and develop
 
 ## [create-virtual-environments.sh](https://github.com/RastonLab/Virtual-FTIR-Functions/blob/main/create-virtual-environments.sh)
 
-This script moves into both the `flask` and `jupyter-notebook` directories to create the virtual python environments (venvs) needed to run the programs. The script then runs the proper `requirements.txt` files to install the required dependencies to these virtual environments.
+This script creates a virtual python environments (venv) needed to run the files in the `flask` and `jupyter-notebook` directories. The script uses `requirements.txt` to install the required dependencies to a venv that is used for both directories.
+
+To activate the virtual environment (venv), run `source venv/bin/activate` in the terminal. To deactivate the virtual enviornment (venv), run `deactivate` in the terminal.
