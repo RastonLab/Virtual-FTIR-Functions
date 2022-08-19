@@ -374,10 +374,9 @@ def __process_spectra(data, s, find_peaks):
     # ----- Pre-processing -----
     # Generate the necessary spectra for each component of the following processing steps
     # The spectra are generated based on the function provided in the call to the Spectrum constructor
-    # https://radis.readthedocs.io/en/latest/spectrum/spectrum.html#initialize-from-python-arrays
-    # The Lead Developer of Radis gave us an example of this which we then followed
     w = s.get_wavelength()
 
+    # TODO The Radis dev gave us this part
     spec_sPlanck = Spectrum(
         {
             "wavelength": w,
