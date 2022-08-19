@@ -13,11 +13,29 @@ import numpy as np
 # --------------------------------------
 
 def __CaF2(data):
+    '''
+    Returns a function that approximates a CaF2 Cell Window.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
 
     return (0.93091) / (1 + (11.12929 / (data / 1000)) ** -12.43933) ** 4.32574
 
 
 def __ZnSe(data):
+    '''
+    Returns a function that approximates a ZnSe Cell Window.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
 
     x_um = data / 1000
     return (0.71015) / ((1 + (20.99353 / x_um) ** -19.31355) ** 1.44348) + -0.13265 / (
@@ -26,11 +44,29 @@ def __ZnSe(data):
 
 
 def __sapphire(data):
+    '''
+    Returns a function that approximates a Sapphire Window.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
 
     return 0.78928 / (1 + (11.9544 / (data / 1000)) ** -12.07226) ** 6903.57039
 
 
 def __AR_ZnSe(data):
+    '''
+    Returns a function that approximates a AR_ZnSe Beamsplitter.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
 
     x_um = data / 1000
     return (
@@ -66,6 +102,15 @@ def __AR_ZnSe(data):
 
 
 def __AR_CaF2(data):
+    '''
+    Returns a function that approximates a AR_CaF2 Beamsplitter.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
 
     x_um = data / 1000
     return (
@@ -98,6 +143,15 @@ def __AR_CaF2(data):
 
 
 def __InSb(data):
+    '''
+    Returns a function that approximates a InSb Dectector.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
 
     x_um = data / 1000
     return 1.97163e11 * (1 / (1 + np.exp(-(x_um - 5.3939) / 1.6624))) * (
@@ -108,6 +162,15 @@ def __InSb(data):
 
 
 def __MCT(data):
+    '''
+    Returns a function that approximates a MCT Dectector.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
 
     x_um = data / 1000
     return (
@@ -121,9 +184,28 @@ def __MCT(data):
     )
 
 def __zeroY(data):
+    '''
+    Returns a function of y = 1 for generating background samples.
+
+            Parameters:
+                data (int): the range of x-values for the function
+            
+            Returns:
+                The approximated function
+    '''
     return (data * 0) + 1
 
 def __sPlanck(spectrum, temp):
+    '''
+    Returns a function that generates a Blackbody Spectrum.
+
+            Parameters:
+                data (int): the range of x-values for the spectrum
+            
+            Returns:
+                The Blackbosy Spectrum
+    '''
+
     H = 6.62606957e-34
     C = 2.99792458e8
     K_B = 1.3806488e-23
@@ -230,7 +312,7 @@ def __calc_wstep(resolution, zero_fill):
 
     return wstep
 
-def __process_spectra(data, s):
+def __process_spectra(data, s, find_peaks):
 
     # ----- Pre-processing -----
     # Generate the necessary spectra for each component of the following processing steps
@@ -369,13 +451,14 @@ def __process_spectra(data, s):
         spectrum = multiply(spectrum, factor, var="transmittance_noslit")
 
     # Post-processing - Find Peaks
-
-    find_peaks = spectrum.to_specutils()
-    noise_region = SpectralRegion((1 / data["minWave"]) / u.cm, (1 / data["maxWave"]) / u.cm)
-    find_peaks = noise_region_uncertainty(find_peaks, noise_region)
-    lines = find_lines_threshold(find_peaks, noise_factor=6)
-    print()
-    print(lines)
+    # Not done on background samples
+    if find_peaks:
+        find_peaks = spectrum.to_specutils()
+        noise_region = SpectralRegion((1 / data["minWave"]) / u.cm, (1 / data["maxWave"]) / u.cm)
+        find_peaks = noise_region_uncertainty(find_peaks, noise_region)
+        lines = find_lines_threshold(find_peaks, noise_factor=6)
+        print()
+        print(lines)
 
     # Return spectrum as a dictionary
     return __loadData(spectrum.get("transmittance_noslit", wunit="nm", Iunit="default"))
@@ -401,7 +484,7 @@ def __generate_spectra(data):
     except:
         return False
 
-    return __process_spectra(data, s)
+    return __process_spectra(data, s, find_peaks=True)
 
 def __generate_background(data):
     try:
@@ -437,4 +520,4 @@ def __generate_background(data):
         name="CaF2 window",
     )
 
-    return __process_spectra(data, spec_zeroY)
+    return __process_spectra(data, spec_zeroY, find_peaks=False)
