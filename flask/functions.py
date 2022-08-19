@@ -230,6 +230,155 @@ def __calc_wstep(resolution, zero_fill):
 
     return wstep
 
+def __process_spectra(data, s):
+
+    # ----- Pre-processing -----
+    # Generate the necessary spectra for each component of the following processing steps
+    # The spectra are generated based on the function provided in the call to the Spectrum constructor
+    w = s.get_wavelength()
+
+    spec_sPlanck = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __sPlanck(w, data["source"]),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    spec_AR_ZnSe = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __AR_ZnSe(w),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    spec_AR_CaF2 = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __AR_CaF2(w),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    spec_CaF2 = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __CaF2(w),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    spec_ZnSe = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __ZnSe(w),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    spec_sapphire = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __sapphire(w),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    spec_MCT = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __MCT(w),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    spec_InSb = Spectrum(
+        {
+            "wavelength": w,
+            "transmittance_noslit": __InSb(w),
+            "radiance_noslit": np.zeros_like(w),
+        },
+        wunit="nm",
+        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
+        name="CaF2 window",
+    )
+    
+    # ----- b.) blackbody spectrum of source -----
+    # SerialSlabs() multiplies the transmittance values (y-values) of the provided spectrum, s, with 
+    # the corresponding transmittance values of the spec_sPlanck spectrum
+    spectrum = SerialSlabs(s, spec_sPlanck)
+
+    # This loop simpulates scans and runs as many times as the user indicated in "Number of Scans"
+    for x in range(data["numScan"]):
+        
+        # ----- c.) transmission spectrum of windows/beamsplitter -----
+
+        # ----- c.1) Beamsplitter -----
+        if data["beamsplitter"] == "AR_ZnSe":
+            spectrum = SerialSlabs(spectrum, spec_AR_ZnSe)
+        elif data["beamsplitter"] == "AR_CaF2":
+            spectrum = SerialSlabs(spectrum, spec_AR_CaF2)
+
+        # ----- c.2) Cell Windows -----
+        if data["cellWindow"] == "CaF2":
+            spectrum = SerialSlabs(spectrum, spec_CaF2)
+            spectrum = SerialSlabs(spectrum, spec_CaF2)
+        elif data["cellWindow"] == "ZnSe":
+            spectrum = SerialSlabs(spectrum, spec_ZnSe)
+            spectrum = SerialSlabs(spectrum, spec_ZnSe)
+
+        # ----- d.) detector response spectrum -----
+        if data["detector"] == "MCT":
+            spectrum = SerialSlabs(spectrum, spec_ZnSe)
+            spec_MCT = add_array(
+                spec_MCT,
+                np.random.normal(0, 20000000, len(spec_MCT.get_wavelength())),
+                var="transmittance_noslit",
+            )
+            spectrum = SerialSlabs(spectrum, spec_MCT)
+        elif data["detector"] == "InSb":
+            spectrum = SerialSlabs(spectrum, spec_sapphire)
+            spec_InSb = add_array(
+                spec_InSb,
+                np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())),
+                var="transmittance_noslit",
+            )
+            spectrum = SerialSlabs(spectrum, spec_InSb)
+
+        # Normalize data
+        numbers = __loadData(
+            spectrum.get("transmittance_noslit", wunit="nm", Iunit="default")
+        )
+        factor = 1 / sum(numbers.values())
+
+        spectrum = multiply(spectrum, factor, var="transmittance_noslit")
+
+    # Post-processing - Find Peaks
+
+    find_peaks = spectrum.to_specutils()
+    noise_region = SpectralRegion((1 / data["minWave"]) / u.cm, (1 / data["maxWave"]) / u.cm)
+    find_peaks = noise_region_uncertainty(find_peaks, noise_region)
+    lines = find_lines_threshold(find_peaks, noise_factor=6)
+    print()
+    print(lines)
+
+    # Return spectrum as a dictionary
+    return __loadData(spectrum.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
 def __generate_spectra(data):
     try:
@@ -252,146 +401,7 @@ def __generate_spectra(data):
     except:
         return False
 
-    # spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
-    w = s.get_wavelength()
-    # ----- b.) blackbody spectrum of source -----
-    spec_sPlanck = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __sPlanck(w, data["source"]),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_AR_ZnSe = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __AR_ZnSe(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_AR_CaF2 = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __AR_CaF2(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_CaF2 = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __CaF2(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_ZnSe = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __ZnSe(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_sapphire = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __sapphire(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_MCT = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __MCT(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_InSb = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __InSb(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-
-    spectrum = SerialSlabs(s, spec_sPlanck)
-
-    # ----- c.) transmission spectrum of windows/beamsplitter -----
-    for x in range(data["numScan"]):
-        print(x)
-
-        # Beamsplitter
-        if data["beamsplitter"] == "AR_ZnSe":
-            spectrum = SerialSlabs(spectrum, spec_AR_ZnSe)
-        elif data["beamsplitter"] == "AR_CaF2":
-            spectrum = SerialSlabs(spectrum, spec_AR_CaF2)
-
-        # Cell Windows
-        if data["cellWindow"] == "CaF2":
-            spectrum = SerialSlabs(spectrum, spec_CaF2)
-            spectrum = SerialSlabs(spectrum, spec_CaF2)
-        elif data["cellWindow"] == "ZnSe":
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-
-        # ----- d.) detector response spectrum -----
-        if data["detector"] == "MCT":
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spec_MCT = add_array(
-                spec_MCT,
-                np.random.normal(0, 20000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
-            spectrum = SerialSlabs(spectrum, spec_MCT)
-        elif data["detector"] == "InSb":
-            spectrum = SerialSlabs(spectrum, spec_sapphire)
-            spec_InSb = add_array(
-                spec_InSb,
-                np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
-            spectrum = SerialSlabs(spectrum, spec_InSb)
-
-        # Normalize
-        numbers = __loadData(
-            spectrum.get("transmittance_noslit", wunit="nm", Iunit="default")
-        )
-        factor = 1 / sum(numbers.values())
-
-        spectrum = multiply(spectrum, factor, var="transmittance_noslit")
-
-
-    # NOTE: Hardcoded for now, might? need user parameters and likely its own function
-    find_peaks = spectrum.to_specutils()
-    noise_region = SpectralRegion((1 / data["minWave"]) / u.cm, (1 / data["maxWave"]) / u.cm)
-    find_peaks = noise_region_uncertainty(find_peaks, noise_region)
-    lines = find_lines_threshold(find_peaks, noise_factor=6)
-    print()
-    print(lines)
-
-    return __loadData(spectrum.get("transmittance_noslit", wunit="nm", Iunit="default"))
+    return __process_spectra(data, s)
 
 def __generate_background(data):
     try:
@@ -414,9 +424,8 @@ def __generate_background(data):
     except:
         return False
 
-    # spectrum = __loadData(s.get("transmittance_noslit", wunit="nm", Iunit="default"))
     w = s.get_wavelength()
-    # ----- b.) blackbody spectrum of source -----
+
     spec_zeroY = Spectrum(
         {
             "wavelength": w,
@@ -427,131 +436,5 @@ def __generate_background(data):
         units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
         name="CaF2 window",
     )
-    spec_sPlanck = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __sPlanck(w, data["source"]),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_AR_ZnSe = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __AR_ZnSe(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_AR_CaF2 = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __AR_CaF2(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_CaF2 = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __CaF2(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_ZnSe = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __ZnSe(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_sapphire = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __sapphire(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_MCT = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __MCT(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
-    spec_InSb = Spectrum(
-        {
-            "wavelength": w,
-            "transmittance_noslit": __InSb(w),
-            "radiance_noslit": np.zeros_like(w),
-        },
-        wunit="nm",
-        units={"radiance_noslit": "mW/cm2/sr/nm", "transmittance_noslit": ""},
-        name="CaF2 window",
-    )
 
-    spectrum = SerialSlabs(spec_zeroY, spec_sPlanck)
-
-    # ----- c.) transmission spectrum of windows/beamsplitter -----
-    for x in range(data["numScan"]):
-        print(x)
-
-        # Beamsplitter
-        if data["beamsplitter"] == "AR_ZnSe":
-            spectrum = SerialSlabs(spectrum, spec_AR_ZnSe)
-        elif data["beamsplitter"] == "AR_CaF2":
-            spectrum = SerialSlabs(spectrum, spec_AR_CaF2)
-
-        # Cell Windows
-        if data["cellWindow"] == "CaF2":
-            spectrum = SerialSlabs(spectrum, spec_CaF2)
-            spectrum = SerialSlabs(spectrum, spec_CaF2)
-        elif data["cellWindow"] == "ZnSe":
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-
-        # ----- d.) detector response spectrum -----
-        if data["detector"] == "MCT":
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spec_MCT = add_array(
-                spec_MCT,
-                np.random.normal(0, 20000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
-            spectrum = SerialSlabs(spectrum, spec_MCT)
-        elif data["detector"] == "InSb":
-            spectrum = SerialSlabs(spectrum, spec_sapphire)
-            spec_InSb = add_array(
-                spec_InSb,
-                np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
-            spectrum = SerialSlabs(spectrum, spec_InSb)
-
-        # Normalize
-        numbers = __loadData(
-            spectrum.get("transmittance_noslit", wunit="nm", Iunit="default")
-        )
-        factor = 1 / sum(numbers.values())
-
-        spectrum = multiply(spectrum, factor, var="transmittance_noslit")
-
-    return __loadData(spectrum.get("transmittance_noslit", wunit="nm", Iunit="default"))
+    return __process_spectra(data, spec_zeroY)
