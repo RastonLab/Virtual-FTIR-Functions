@@ -49,6 +49,7 @@ def fetch_background():
             "text": "No line in the specified wavenumber range",
         }
 
+
 @app.route("/post_json", methods=["POST"])
 def process_json():
     # put incoming JSON into a dictionary
@@ -83,6 +84,7 @@ def process_json():
             "success": False,
             "text": "No line in the specified wavenumber range",
         }
+
 
 if __name__ == "__main__":
     app.run(debug=True)
