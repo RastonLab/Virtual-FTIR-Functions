@@ -2,15 +2,25 @@
 
 ## flask
 
-### app.py
+### `background.py`
 
-`app.py` contains the Flask endpoints used by the front-end.
+This Python file will generate the background noise that will be associated with a spectrum.
 
-### functions.py
+### `calculate.py`
 
-`functions.py` holds the functions used by `app.py`. At one time, `functions.py` and `app.py` were one file. However, as functions became longer and more complex. It made more sense to split the two.
+This Python file will generate the transmission spectrum of a gas sample.
+
+### `flask.py`
+
+This Python file contains the Flask endpoints used by the front-end. This program acts as a server and requires input from a client, cURL, or fetch.
+
+### `functions.py`
+
+This Python file holds the functions used by the program files above.
 
 ## Tests
+
+These tests are for `flask.py` only.
 
 ### cURL
 
