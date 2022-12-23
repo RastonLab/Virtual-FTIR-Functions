@@ -8,13 +8,13 @@ This directory contains
 
 - `background.py`
   - Contains a program that strictly generates a background sample. This program uses `data.json` for its input and is capable of graphing using `mathplotlib`.
-- ## `fast_api.py`
+- `fast_api.py`
   - Contains a program that accepts API calls for both a background sample and spectrum. This program accepts JSON through a `fetch()` or `cURL` command and returns JSON of X and Y coordinates.
-- ## `flask_api`
+- `flask_api`
   - Contains a program that accepts API calls for both a background sample and spectrum. This program accepts JSON through a `fetch()` or `cURL` command and returns JSON of X and Y coordinates.
-- ## `functions.py`
+- `functions.py`
   - Contains functions used in all other files. Designed so edits only need to be made to one file for main functionality updates and changes.
-- ## `spectrum.py`
+- `spectrum.py`
   - Contains a program that strictly generates a spectrum. This program uses `data.json` for its input and is capable of graphing using `mathplotlib`.
 
 ## [jupyter-notebook](https://github.com/RastonLab/Virtual-FTIR-Functions/tree/main/jupyter-notebook)
