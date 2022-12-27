@@ -347,12 +347,36 @@ def __calc_wstep(resolution, zero_fill):
 # ------------------------------
 
 def __process_spectra(data, s, find_peaks):
+    '''
+    Takes a spectrum and adds noise that approximates a real spectrometer.
+
+    This is achieved by creating additonal spectra based on functions that 
+    approximate the behavior of FTIR components. Those spectra are then 
+    multiplied into the base spectrum. 
+
+    All steps except pre-processing, Step A, and post-processing are repeated
+    a number of times given by the user. At the end of each loop, the spectrum
+    is normalized.
+
+    If the spectrum is a background sample, no post-processing is done. 
+    Otherwise, an algorithm for find the peaks of the spectrum is executed
+
+        Parameters:
+            data (dict): User given parameters
+            s (Spectrum): The given spectrum
+            find_peaks (boolean): Tells wether or not the find peaks algorithm should run
+
+        Returns:
+            The processed spectrum as a dictionary
+
+    '''
 
     # ----- Pre-processing -----
     # Generate the necessary spectra for each component of the following processing steps
     # The spectra are generated based on the function provided in the call to the Spectrum constructor
     w = s.get_wavelength()
 
+    # TODO The Radis dev gave us this part
     spec_sPlanck = Spectrum(
         {
             "wavelength": w,
@@ -437,6 +461,7 @@ def __process_spectra(data, s, find_peaks):
     # ----- b.) blackbody spectrum of source -----
     # SerialSlabs() multiplies the transmittance values (y-values) of the provided spectrum, s, with 
     # the corresponding transmittance values of the spec_sPlanck spectrum
+    # https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(s, spec_sPlanck)
 
     # This loop simpulates scans and runs as many times as the user indicated in "Number of Scans"
@@ -486,6 +511,7 @@ def __process_spectra(data, s, find_peaks):
 
     # Post-processing - Find Peaks
     # Not done on background samples
+    # https://radis.readthedocs.io/en/latest/auto_examples/plot_specutils_processing.html#sphx-glr-auto-examples-plot-specutils-processing-py
     if find_peaks:
         find_peaks = spectrum.to_specutils()
         noise_region = SpectralRegion((1 / data["minWave"]) / u.cm, (1 / data["maxWave"]) / u.cm)
@@ -498,6 +524,20 @@ def __process_spectra(data, s, find_peaks):
     return __loadData(spectrum.get("transmittance_noslit", wunit="nm", Iunit="default"))
 
 def __generate_spectra(data):
+    '''
+    Generates a spectrum using radis based on user given parameters.
+
+    That spectrum is then processed by __process_spectra.
+
+    If there is an issue reaching out to radis, the error is caught and False is returned
+
+        Paramters:
+            data (dict): the user given parameters
+
+        Return:
+            The fully processed spectrum or False if there is an error
+    '''
+
     try:
         wstep = __calc_wstep(data["resolution"], data["zeroFill"])
         # ----- a.) transmission spectrum of gas sample -----
@@ -521,6 +561,20 @@ def __generate_spectra(data):
     return __process_spectra(data, s, find_peaks=True)
 
 def __generate_background(data):
+    '''
+    Generates a background sample using radis based on user given parameters.
+
+    That sample is then processed by __process_spectra.
+
+    If there is an issue reaching out to radis, the error is caught and False is returned
+
+        Paramters:
+            data (dict): the user given parameters
+
+        Return:
+            The fully processed sample or False if there is an error
+    '''
+
     try:
         wstep = __calc_wstep(data["resolution"], data["zeroFill"])
         # ----- a.) transmission spectrum of gas sample -----
