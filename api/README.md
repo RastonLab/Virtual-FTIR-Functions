@@ -1,6 +1,6 @@
 # Virtual-FTIR-Functions
 
-## flask
+## api
 
 ### `background.py`
 

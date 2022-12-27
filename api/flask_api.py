@@ -1,3 +1,7 @@
+# Flask server
+#   https://flask.palletsprojects.com/en/2.2.x/
+#   python3 flask_api.py
+
 from flask import Flask, request
 from flask_cors import CORS
 
