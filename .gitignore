@@ -129,5 +129,4 @@ ui-tests/playwright-report
 .vscode
 
 # Custom
-flask/venv
-jupyter-notebook/venv
+venv
