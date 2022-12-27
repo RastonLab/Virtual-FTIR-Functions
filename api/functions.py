@@ -483,23 +483,19 @@ def __process_spectra(data, s, find_peaks):
             spectrum = SerialSlabs(spectrum, spec_ZnSe)
             spectrum = SerialSlabs(spectrum, spec_ZnSe)
 
-        # ----- d.) detector response spectrum -----
+         # ----- d.) detector response spectrum -----
         if data["detector"] == "MCT":
             spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spec_MCT = add_array(
-                spec_MCT,
-                np.random.normal(0, 20000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
             spectrum = SerialSlabs(spectrum, spec_MCT)
         elif data["detector"] == "InSb":
             spectrum = SerialSlabs(spectrum, spec_sapphire)
-            spec_InSb = add_array(
-                spec_InSb,
-                np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
             spectrum = SerialSlabs(spectrum, spec_InSb)
+            
+        spectrum = add_array(
+            spectrum,
+            np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())), # why spec_MCT??? and not spectrum???
+            var="transmittance_noslit",
+        )
 
         # Normalize data
         # numbers = __loadData(
