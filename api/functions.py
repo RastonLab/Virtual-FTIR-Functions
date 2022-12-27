@@ -374,10 +374,9 @@ def __process_spectra(data, s, find_peaks):
     # ----- Pre-processing -----
     # Generate the necessary spectra for each component of the following processing steps
     # The spectra are generated based on the function provided in the call to the Spectrum constructor
-    # https://radis.readthedocs.io/en/latest/spectrum/spectrum.html#initialize-from-python-arrays
-    # The Lead Developer of Radis gave us an example of this which we then followed
     w = s.get_wavelength()
 
+    # TODO The Radis dev gave us this part
     spec_sPlanck = Spectrum(
         {
             "wavelength": w,
@@ -484,23 +483,19 @@ def __process_spectra(data, s, find_peaks):
             spectrum = SerialSlabs(spectrum, spec_ZnSe)
             spectrum = SerialSlabs(spectrum, spec_ZnSe)
 
-        # ----- d.) detector response spectrum -----
+         # ----- d.) detector response spectrum -----
         if data["detector"] == "MCT":
             spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spec_MCT = add_array(
-                spec_MCT,
-                np.random.normal(0, 20000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
             spectrum = SerialSlabs(spectrum, spec_MCT)
         elif data["detector"] == "InSb":
             spectrum = SerialSlabs(spectrum, spec_sapphire)
-            spec_InSb = add_array(
-                spec_InSb,
-                np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())),
-                var="transmittance_noslit",
-            )
             spectrum = SerialSlabs(spectrum, spec_InSb)
+            
+        spectrum = add_array(
+            spectrum,
+            np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())), # why spec_MCT??? and not spectrum???
+            var="transmittance_noslit",
+        )
 
         # Normalize data
         # numbers = __loadData(
