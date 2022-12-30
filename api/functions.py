@@ -346,6 +346,16 @@ def __calc_wstep(resolution, zero_fill):
 # ----- Spectra Processing -----
 # ------------------------------
 
+def __find_peaks(data, spectrum):    
+    find_peaks = spectrum.to_specutils()
+    # noise_region = SpectralRegion((data["maxWave"]) / u.cm, (data["minWave"]) / u.cm)
+    # find_peaks = noise_region_uncertainty(find_peaks, noise_region)
+    lines = find_lines_threshold(find_peaks, noise_factor=5)
+
+    # file = open("lines.txt", "w")
+    lines.write ("lines.txt", format="ascii", overwrite=True)
+    # file.close()
+
 def __process_spectra(data, s, find_peaks):
     '''
     Takes a spectrum and adds noise that approximates a real spectrometer.
@@ -490,10 +500,10 @@ def __process_spectra(data, s, find_peaks):
         elif data["detector"] == "InSb":
             spectrum = SerialSlabs(spectrum, spec_sapphire)
             spectrum = SerialSlabs(spectrum, spec_InSb)
-            
+
         spectrum = add_array(
             spectrum,
-            np.random.normal(0, 200000000, len(spec_MCT.get_wavelength())), # why spec_MCT??? and not spectrum???
+            np.random.normal(0, 200000000, len(spectrum)),
             var="transmittance_noslit",
         )
 
@@ -509,12 +519,7 @@ def __process_spectra(data, s, find_peaks):
     # Not done on background samples
     # https://radis.readthedocs.io/en/latest/auto_examples/plot_specutils_processing.html#sphx-glr-auto-examples-plot-specutils-processing-py
     if find_peaks:
-        find_peaks = spectrum.to_specutils()
-        noise_region = SpectralRegion((1 / data["minWave"]) / u.cm, (1 / data["maxWave"]) / u.cm)
-        find_peaks = noise_region_uncertainty(find_peaks, noise_region)
-        lines = find_lines_threshold(find_peaks, noise_factor=6)
-        print()
-        print(lines)
+        __find_peaks(data, spectrum)
 
     # Return spectrum as a dictionary
     return __loadData(spectrum.get("transmittance_noslit", wunit="nm", Iunit="default"))
