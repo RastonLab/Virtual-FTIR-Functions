@@ -347,14 +347,11 @@ def __calc_wstep(resolution, zero_fill):
 # ------------------------------
 
 def __find_peaks(data, spectrum):    
-    find_peaks = spectrum.to_specutils()
-    # noise_region = SpectralRegion((data["maxWave"]) / u.cm, (data["minWave"]) / u.cm)
-    # find_peaks = noise_region_uncertainty(find_peaks, noise_region)
-    lines = find_lines_threshold(find_peaks, noise_factor=5)
+    find_peaks = spectrum.to_specutils('transmittance_noslit', 'nm_vac') #had to put vac, cannot put air
+    lines = find_lines_threshold(find_peaks, noise_factor=200000000) #what should this be set to?
 
-    # file = open("lines.txt", "w")
     lines.write ("lines.txt", format="ascii", overwrite=True)
-    # file.close()
+
 
 def __process_spectra(data, s, find_peaks):
     '''
