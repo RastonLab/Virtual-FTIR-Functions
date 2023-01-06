@@ -21,6 +21,7 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 - `virtual_environment.sh`
 
   - This script creates a virtual python environments (venv) needed to run `app.py`. The script uses `requirements.txt` to install the required dependencies to a venv that is used for both directories. To activate the virtual environment (if your editor or terminal does not automatically activate it), run `source venv/bin/activate`. To deactivate the virtual environment, run `deactivate` in the terminal.
+    - NOTE: This script is designed to be run from outside the `scripts` directory.
 
 ---
 
