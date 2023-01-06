@@ -8,8 +8,6 @@ This directory contains
 
 - `background.py`
   - Contains a program that strictly generates a background sample. This program uses `data.json` for its input and is capable of graphing using `mathplotlib`.
-- `fast_api.py`
-  - Contains a program that accepts API calls for both a background sample and spectrum. This program accepts JSON through a `fetch()` or `cURL` command and returns JSON of X and Y coordinates.
 - `flask_api`
   - Contains a program that accepts API calls for both a background sample and spectrum. This program accepts JSON through a `fetch()` or `cURL` command and returns JSON of X and Y coordinates.
 - `functions.py`
