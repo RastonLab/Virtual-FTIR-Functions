@@ -6,8 +6,5 @@ specutils
 flask
 flask-cors
 
-# used by fast
-fastapi
-
 # formatting
 black

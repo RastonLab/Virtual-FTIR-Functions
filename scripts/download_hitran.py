@@ -1,5 +1,4 @@
-# this script installs the HITRAN data for the following molecules locally
-#   the commented out molecules do not download properly but are included in the UI
+# this script installs the HITRAN data for the following molecules locally the commented out molecules do not download properly but are included in the UI
 from radis.io.hitran import fetch_hitran
 
 for molecule in [
