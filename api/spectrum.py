@@ -7,7 +7,7 @@ from functions import __param_check, __generate_spectra
 
 def main():
     # read local data file into a dictionary
-    with open("../data.json", "r") as data_json:
+    with open("./data.json", "r") as data_json:
         data = json.load(data_json)
 
     print(data)
