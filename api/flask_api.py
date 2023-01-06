@@ -23,7 +23,7 @@ def ftir():
 
 
 @app.route("/spectrum", methods=["POST"])
-def process_json():
+def spectrum():
     # put incoming JSON into a dictionary
     params = json.loads(request.data)
 
@@ -58,7 +58,7 @@ def process_json():
 
 
 @app.route("/background", methods=["POST"])
-def fetch_background():
+def background():
     # put incoming JSON into a dictionary
     data = json.loads(request.data)
 
