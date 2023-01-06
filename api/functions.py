@@ -212,35 +212,33 @@ def __MCT(spectrum):
 # -------------------------------------
 # ---------- helper functions ----------
 # ------------------------------------
-
-
-def __zeroY(data):
+def __zeroY(spectrum):
     """
-    Returns a function of y = 1 for generating background samples.
+    Calculates the y-values (y = 1) for background samples.
 
             Parameters:
-                data (int): the range of x-values for the function
+                spectrum: An array of x-value for a spectrum
 
             Returns:
-                The approximated function
+                The y-values associated with a background sample
     """
-    return (data * 0) + 1
+    return (spectrum * 0) + 1
 
 
-def __param_check(data):
+def __param_check(params):
     """
-    Checks user given parameters and makes sure they are valid.
+    Parses user provided parameters for validity.
 
         Parameters:
-            data (dict): the user given parameters
+            params (dict): The parameters provided by the user
 
         Returns:
             True if params are good. Else, returns False
     """
 
     # check if number of parameters is correct
-    if len(data) != 11:
-        print("  not enough params. total params: %s" % (len(data)))
+    if len(params) != 11:
+        print("  not enough params. total params: %s" % (len(params)))
         return False
 
     # check if parameter names are correct
@@ -258,8 +256,8 @@ def __param_check(data):
         "detector",
     ]
 
-    for key, value in data.items():
-        if (key not in valid_params) or (data[key] is None):
+    for key, value in params.items():
+        if (key not in valid_params) or (params[key] is None):
             print(f"  error with key: {key}. Value is: {value}")
             return False
 
@@ -330,13 +328,13 @@ def __calc_wstep(resolution, zero_fill):
 
 
 # ------------------------------
-# ----- Spectra Processing -----
+# ----- Spectrum Processing -----
 # ------------------------------
-
-
-def __process_spectra(data, s, find_peaks):
+def __process_spectrum(params, raw_spectrum, find_peaks):
     """
-    Takes a spectrum and adds noise that approximates a real spectrometer.
+    The following function takes a 'raw spectrum' generated using Radis's
+    'calc_spectrum()' function and performing custom equations that virtualize
+    the spectrum in a spectrometer.
 
     This is achieved by creating additional spectra based on functions that
     approximate the behavior of FTIR components. Those spectra are then
@@ -346,12 +344,9 @@ def __process_spectra(data, s, find_peaks):
     a number of times given by the user. At the end of each loop, the spectrum
     is normalized.
 
-    If the spectrum is a background sample, no post-processing is done.
-    Otherwise, an algorithm for find the peaks of the spectrum is executed
-
         Parameters:
-            data (dict): User given parameters
-            s (Spectrum): The given spectrum
+            params (dict): The parameters provided by the user
+            raw_spectrum (Spectrum object): The spectrum generated from 'calc_spectrum()'
             find_peaks (boolean): Tells wether or not the find peaks algorithm should run
 
         Returns:
@@ -360,15 +355,15 @@ def __process_spectra(data, s, find_peaks):
     """
 
     # ----- Pre-processing -----
-    # generate the necessary spectra for blackbody spectra, beamsplitters, cell windows, detectors. the spectra are generated based on the function provided in the call to the Spectrum constructor
+    # generate the necessary spectra for blackbody, beamsplitters, cell windows, detectors. the spectra are generated based on the function provided in the call to the Spectrum constructor
 
     # returns the x-values of calc_spectrum() in an array
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get_wavenumber
-    w = s.get_wavenumber()
+    w = raw_spectrum.get_wavenumber()
 
-    # processing for blackbody spectra (sPlanck)
+    # processing for blackbody spectrum (sPlanck)
     spec_sPlanck = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __sPlanck(w, data["source"])},
+        {"wavenumber": w, "transmittance_noslit": __sPlanck(w, params["source"])},
         wunit="cm",
         units={"transmittance_noslit": ""},
         name="sPlanck",
@@ -433,20 +428,20 @@ def __process_spectra(data, s, find_peaks):
     # SerialSlabs() multiplies the transmittance values (y-values) of two provided spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     # ----- b.) blackbody spectrum of source -----
-    spectrum = SerialSlabs(s, spec_sPlanck)
+    spectrum = SerialSlabs(raw_spectrum, spec_sPlanck)
 
     # this loop simulates scans and runs as many times as the user indicated in 'number of scans'
-    for x in range(data["numScan"]):
+    for x in range(params["numScan"]):
         # ----- c.) transmission spectrum of windows/beamsplitter -----
         # ----- c.1) Beamsplitter -----
-        match data["beamsplitter"]:
+        match params["beamsplitter"]:
             case "AR_ZnSe":
                 spectrum = SerialSlabs(spectrum, spec_AR_ZnSe)
             case "AR_CaF2":
                 spectrum = SerialSlabs(spectrum, spec_AR_CaF2)
 
         # ----- c.2) cell windows -----
-        match data["cellWindow"]:
+        match params["cellWindow"]:
             case "CaF2":
                 spectrum = SerialSlabs(spectrum, spec_CaF2)
                 spectrum = SerialSlabs(spectrum, spec_CaF2)
@@ -455,8 +450,7 @@ def __process_spectra(data, s, find_peaks):
                 spectrum = SerialSlabs(spectrum, spec_ZnSe)
 
         # ----- d.) detector response spectrum -----
-
-        match data["detector"]:
+        match params["detector"]:
             case "MCT":
                 spectrum = SerialSlabs(spectrum, spec_ZnSe)
                 spectrum = SerialSlabs(spectrum, spec_MCT)
@@ -499,34 +493,34 @@ def __process_spectra(data, s, find_peaks):
     return dict(zip(x_value, y_value))
 
 
-def __generate_spectra(data):
+def __generate_spectrum(params):
     """
-    Generates a spectrum using radis based on user given parameters.
+    Generates a spectrum using Radis's 'calc_spectrum()' function based
+    on user parameters. That spectrum is then processed by
+    '__process_spectrum()'.
 
-    That spectrum is then processed by __process_spectra.
+    If there is an issue with the Radis library, the error message is returned.
 
-    If there is an issue reaching out to radis, the error is caught and False is returned
-
-        Paramters:
-            data (dict): the user given parameters
+        Parameters:
+            params (dict): The parameters provided by the user
 
         Return:
-            The fully processed spectrum or False if there is an error
+            The raw spectrum, or the message text if an error occurs
     """
 
     # resolution of wavenumber grid (cm^-1)
     #   https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum:~:text=wstep%20(float%20(,%27auto%27)
-    wstep = __calc_wstep(data["resolution"], data["zeroFill"])
+    wstep = __calc_wstep(params["resolution"], params["zeroFill"])
 
     try:
         # ----- a.) transmission spectrum of gas sample -----
         #   https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
-        s = calc_spectrum(
-            data["minWave"],
-            data["maxWave"],
-            molecule=data["molecule"],
+        spectrum = calc_spectrum(
+            params["minWave"],
+            params["maxWave"],
+            molecule=params["molecule"],
             isotope="1,2,3",
-            pressure=data["pressure"],
+            pressure=params["pressure"],
             Tgas=294.15,
             path_length=10,
             wstep=wstep,
@@ -535,55 +529,31 @@ def __generate_spectra(data):
             warnings={"AccuracyError": "ignore"},
         )
     except Exception as e:
-        print(f"ERROR: {e}")
-        return False
+        return None, True, e
 
-    return __process_spectra(data, s, find_peaks=True)
+    return spectrum, False, None
 
 
-def __generate_background(data):
+def __process_background(raw_spectrum):
     """
-    Generates a background sample using radis based on user given parameters.
-
-    That sample is then processed by __process_spectra.
-
-    If there is an issue reaching out to radis, the error is caught and False is returned
+    Accepts a spectrum generated using '__generate_spectrum()'.
+    A background by default has all y-values of one.
 
         Parameters:
-            data (dict): the user given parameters
+            raw_spectrum (Spectrum object): The spectrum generated from 'calc_spectrum()'
 
         Return:
-            The fully processed sample or False if there is an error
+            The processed background sample with y-values of one
     """
-
-    try:
-        wstep = __calc_wstep(data["resolution"], data["zeroFill"])
-        # ----- a.) transmission spectrum of gas sample -----
-        # https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
-        s = calc_spectrum(
-            data["minWave"],
-            data["maxWave"],
-            molecule=data["molecule"],
-            isotope="1,2,3",
-            pressure=data["pressure"],
-            Tgas=294.15,
-            path_length=10,
-            wstep=wstep,
-            databank="hitran",
-            verbose=False,
-            warnings={"AccuracyError": "ignore"},
-        )
-    except:
-        return False
 
     spec_zeroY = Spectrum(
         {
-            "wavenumber": s.get_wavenumber(),
-            "transmittance_noslit": __zeroY(s.get_wavenumber()),
+            "wavenumber": raw_spectrum.get_wavenumber(),
+            "transmittance_noslit": __zeroY(raw_spectrum.get_wavenumber()),
         },
         wunit="cm",
         units={"transmittance_noslit": ""},
         name="Background",
     )
 
-    return __process_spectra(data, spec_zeroY, find_peaks=False)
+    return spec_zeroY
