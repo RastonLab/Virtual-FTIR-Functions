@@ -5,6 +5,9 @@ specutils
 # used by flask
 flask
 flask-cors
+wheel
+gunicorn
 
 # formatting
 black
+
