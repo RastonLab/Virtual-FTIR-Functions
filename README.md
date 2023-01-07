@@ -55,6 +55,8 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
    python wsgi.py
    ```
 
+**NOTE**: Make sure in the frontend that `src/routes/ExperimentalSetup.jsx` has the proper fetch URLs uncommented: https://github.com/RastonLab/Virtual-FTIR-Spectrometer/blob/main/src/routes/ExperimentalSetup.jsx
+
 ---
 
 ## Flask Test Query
