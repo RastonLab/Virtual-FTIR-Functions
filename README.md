@@ -12,6 +12,10 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
   - Contains functions used in all other files. Designed so edits only need to be made to one file for main functionality updates and changes.
 
+- `wsgi.py`
+
+  - This file is used for deployment by Gunicorn and Nginx on the server.
+
 ## scripts
 
 - `download_hitran.py`
@@ -25,26 +29,54 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
 ---
 
-### Flask Test Query
+## How to run
+
+1. Create and setup the Python virtual environment:
+
+   ```
+   ./script/virtual_environment.sh
+   ```
+
+2. Activate the virtual environment:
+
+   ```
+   source venv/bin/activate
+   ```
+
+3. To run the Flask application:
+
+   ```
+   python app.py
+   ```
+
+   or
+
+   ```
+   python wsgi.py
+   ```
+
+---
+
+## Flask Test Query
 
 - `cURL`
 
   - This cURL command has be used in a terminal to test the applications ability to properly return the X and Y coordinates.
 
-```
-curl -X POST localhost:5000/spectrum \
-    -H "Content-type: application/json" \
-    -d "{ \
-        \"minWave\" : 1900, \
-        \"maxWave\" : 2300, \
-        \"molecule\" : \"CO\", \
-        \"pressure\" : 0.01, \
-        \"resolution\" : 1, \
-        \"numScan\" : 1, \
-        \"zeroFill\" : 0, \
-        \"source\" : 3100, \
-        \"beamsplitter\" : \"AR_ZnSe\", \
-        \"cellWindow\" : \"CaF2\", \
-        \"detector\" : \"MCT\" \
-    }"
-```
+  ```
+  curl -X POST localhost:5000/spectrum \
+      -H "Content-type: application/json" \
+      -d "{ \
+          \"minWave\" : 1900, \
+          \"maxWave\" : 2300, \
+          \"molecule\" : \"CO\", \
+          \"pressure\" : 0.01, \
+          \"resolution\" : 1, \
+          \"numScan\" : 1, \
+          \"zeroFill\" : 0, \
+          \"source\" : 3100, \
+          \"beamsplitter\" : \"AR_ZnSe\", \
+          \"cellWindow\" : \"CaF2\", \
+          \"detector\" : \"MCT\" \
+      }"
+  ```
