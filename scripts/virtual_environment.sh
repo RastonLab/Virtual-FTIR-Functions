@@ -1,13 +1,21 @@
 #!/bin/bash
 
-echo "------ script started ------"
+echo "------ 'virtual_environment.sh' started ------"
 
-echo "-- creating flask virtual environment --"
-
+echo -n " creating virtual environment... "
 python3 -m venv venv
+echo "done"
 
+echo -n " activating virtual environment... "
 source venv/bin/activate
+echo "done"
 
-pip install -r ./scripts/requirements.txt
+echo -n " installing dependencies from 'requirements.txt'... "
+pip install -q -r ./scripts/requirements.txt
+echo "done"
+
+echo -n " deactivating virtual environment... "
+deactivate
+echo "done"
 
 echo "------ script finished ------"
