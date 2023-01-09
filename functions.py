@@ -1,5 +1,6 @@
 import astropy.units as u
 import numpy as np
+import radis
 from radis import SerialSlabs, Spectrum, calc_spectrum
 from radis.spectrum.operations import add_array, multiply
 from specutils import SpectralRegion
@@ -528,8 +529,18 @@ def __generate_spectrum(params):
             verbose=False,
             warnings={"AccuracyError": "ignore"},
         )
+    except radis.misc.warning.EmptyDatabaseError:
+        return None, True, "error: No line in the specified wavenumber range"
     except Exception as e:
-        return None, True, e
+        match str(e):
+            case "Failed to retrieve data for given parameters.":
+                return (
+                    None,
+                    True,
+                    "error: HITRAN data does not exist for requested molecule.",
+                )
+            case other:
+                return None, True, str(e)
 
     return spectrum, False, None
 
