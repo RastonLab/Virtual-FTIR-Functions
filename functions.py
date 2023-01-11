@@ -466,14 +466,6 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
             var="transmittance_noslit",
         )
 
-        # Normalize data
-        # numbers = __loadData(
-        #     spectrum.get("transmittance_noslit", wunit="nm", Iunit="default")
-        # )
-        # factor = 1 / sum(numbers.values())
-
-        # spectrum = multiply(spectrum, factor, var="transmittance_noslit")
-
     # Post-processing - Find Peaks
     # Not done on background samples
     # https://radis.readthedocs.io/en/latest/auto_examples/plot_specutils_processing.html#sphx-glr-auto-examples-plot-specutils-processing-py
@@ -491,7 +483,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     x_value, y_value = spectrum.get("transmittance_noslit")
 
     # Return spectrum as a dictionary
-    return dict(zip(x_value, y_value))
+    return dict(zip(x_value, (y_value / params["numScan"])))
 
 
 def __generate_spectrum(params):
