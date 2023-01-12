@@ -431,34 +431,34 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     # ----- b.) blackbody spectrum of source -----
     spectrum = SerialSlabs(raw_spectrum, spec_sPlanck)
 
+    # ----- c.) transmission spectrum of windows/beamsplitter -----
+    # ----- c.1) Beamsplitter -----
+    match params["beamsplitter"]:
+        case "AR_ZnSe":
+            spectrum = SerialSlabs(spectrum, spec_AR_ZnSe)
+        case "AR_CaF2":
+            spectrum = SerialSlabs(spectrum, spec_AR_CaF2)
+
+    # ----- c.2) cell windows -----
+    match params["cellWindow"]:
+        case "CaF2":
+            spectrum = SerialSlabs(spectrum, spec_CaF2)
+            spectrum = SerialSlabs(spectrum, spec_CaF2)
+        case "ZnSe":
+            spectrum = SerialSlabs(spectrum, spec_ZnSe)
+            spectrum = SerialSlabs(spectrum, spec_ZnSe)
+
+    # ----- d.) detector response spectrum -----
+    match params["detector"]:
+        case "MCT":
+            spectrum = SerialSlabs(spectrum, spec_ZnSe)
+            spectrum = SerialSlabs(spectrum, spec_MCT)
+        case "InSb":
+            spectrum = SerialSlabs(spectrum, spec_sapphire)
+            spectrum = SerialSlabs(spectrum, spec_InSb)
+
     # this loop simulates scans and runs as many times as the user indicated in 'number of scans'
     for x in range(params["numScan"]):
-        # ----- c.) transmission spectrum of windows/beamsplitter -----
-        # ----- c.1) Beamsplitter -----
-        match params["beamsplitter"]:
-            case "AR_ZnSe":
-                spectrum = SerialSlabs(spectrum, spec_AR_ZnSe)
-            case "AR_CaF2":
-                spectrum = SerialSlabs(spectrum, spec_AR_CaF2)
-
-        # ----- c.2) cell windows -----
-        match params["cellWindow"]:
-            case "CaF2":
-                spectrum = SerialSlabs(spectrum, spec_CaF2)
-                spectrum = SerialSlabs(spectrum, spec_CaF2)
-            case "ZnSe":
-                spectrum = SerialSlabs(spectrum, spec_ZnSe)
-                spectrum = SerialSlabs(spectrum, spec_ZnSe)
-
-        # ----- d.) detector response spectrum -----
-        match params["detector"]:
-            case "MCT":
-                spectrum = SerialSlabs(spectrum, spec_ZnSe)
-                spectrum = SerialSlabs(spectrum, spec_MCT)
-            case "InSb":
-                spectrum = SerialSlabs(spectrum, spec_sapphire)
-                spectrum = SerialSlabs(spectrum, spec_InSb)
-
         # add random noise to spectrum
         spectrum = add_array(
             spectrum,
@@ -483,7 +483,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     x_value, y_value = spectrum.get("transmittance_noslit")
 
     # Return spectrum as a dictionary
-    return dict(zip(x_value, (y_value / params["numScan"])))
+    return dict(zip(x_value, y_value))
 
 
 def __generate_spectrum(params):
