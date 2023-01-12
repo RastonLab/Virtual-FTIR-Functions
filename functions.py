@@ -457,14 +457,14 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
             spectrum = SerialSlabs(spectrum, spec_sapphire)
             spectrum = SerialSlabs(spectrum, spec_InSb)
 
-    # this loop simulates scans and runs as many times as the user indicated in 'number of scans'
-    for x in range(params["numScan"]):
-        # add random noise to spectrum
-        spectrum = add_array(
-            spectrum,
-            np.random.normal(0, 200000000, len(spectrum.get_wavenumber())),
-            var="transmittance_noslit",
-        )
+    # add random noise to spectrum
+    #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
+    spectrum = add_array(
+        spectrum,
+        sum(np.random.normal(0, 200000000, (params["numScan"], len(w))))
+        / params["numScan"],
+        var="transmittance_noslit",
+    )
 
     # Post-processing - Find Peaks
     # Not done on background samples
