@@ -461,7 +461,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     spectrum = add_array(
         spectrum,
-        sum(np.random.normal(0, 200000000, (params["numScan"], len(w))))
+        sum(np.random.normal(0, 800000000, (params["numScan"], len(w))))
         / params["numScan"],
         var="transmittance_noslit",
     )
