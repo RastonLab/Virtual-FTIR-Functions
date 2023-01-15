@@ -455,17 +455,19 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
         case "MCT":
             slabs.extend([spec_ZnSe, spec_MCT])
         case "InSb":
-            slabs.append([spec_sapphire, spec_InSb])
+            slabs.extend([spec_sapphire, spec_InSb])
 
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
 
+    spectrum.normalize(normalize_how="mean", inplace=True, force=True)
+
     # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     spectrum = add_array(
         spectrum,
-        sum(np.random.normal(0, 800000000, (params["numScan"], len(w))))
+        sum(np.random.normal(0, 1, (params["numScan"], len(w))))
         / params["numScan"],
         var="transmittance_noslit",
     )
