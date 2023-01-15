@@ -426,42 +426,48 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
         name="InSb",
     )
 
-    # SerialSlabs() multiplies the transmittance values (y-values) of two provided spectra
-    #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
+    # list of spectra to multiply
+    slabs = []
+
+    # ----- a.) transmission spectrum of gas sample -----
+    slabs.append(raw_spectrum)
+
     # ----- b.) blackbody spectrum of source -----
-    spectrum = SerialSlabs(raw_spectrum, spec_sPlanck)
+    slabs.append(spec_sPlanck)
 
     # ----- c.) transmission spectrum of windows/beamsplitter -----
     # ----- c.1) Beamsplitter -----
     match params["beamsplitter"]:
         case "AR_ZnSe":
-            spectrum = SerialSlabs(spectrum, spec_AR_ZnSe)
+            slabs.append(spec_AR_ZnSe)
         case "AR_CaF2":
-            spectrum = SerialSlabs(spectrum, spec_AR_CaF2)
+            slabs.append(spec_AR_CaF2)
 
     # ----- c.2) cell windows -----
     match params["cellWindow"]:
         case "CaF2":
-            spectrum = SerialSlabs(spectrum, spec_CaF2)
-            spectrum = SerialSlabs(spectrum, spec_CaF2)
+            slabs.extend([spec_CaF2, spec_CaF2])
         case "ZnSe":
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
+            slabs.extend([spec_ZnSe, spec_ZnSe])
 
     # ----- d.) detector response spectrum -----
     match params["detector"]:
         case "MCT":
-            spectrum = SerialSlabs(spectrum, spec_ZnSe)
-            spectrum = SerialSlabs(spectrum, spec_MCT)
+            slabs.extend([spec_ZnSe, spec_MCT])
         case "InSb":
-            spectrum = SerialSlabs(spectrum, spec_sapphire)
-            spectrum = SerialSlabs(spectrum, spec_InSb)
+            slabs.extend([spec_sapphire, spec_InSb])
+
+    # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
+    #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
+    spectrum = SerialSlabs(*slabs, modify_inputs="True")
+
+    spectrum.normalize(normalize_how="mean", inplace=True, force=True)
 
     # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     spectrum = add_array(
         spectrum,
-        sum(np.random.normal(0, 800000000, (params["numScan"], len(w))))
+        sum(np.random.normal(0, 1, (params["numScan"], len(w))))
         / params["numScan"],
         var="transmittance_noslit",
     )
@@ -479,11 +485,8 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     #     print()
     #     print(lines)
 
-    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
-    x_value, y_value = spectrum.get("transmittance_noslit")
-
-    # Return spectrum as a dictionary
-    return dict(zip(x_value, y_value))
+    # return processed spectrum
+    return spectrum
 
 
 def __generate_spectrum(params):

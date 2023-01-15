@@ -49,11 +49,14 @@ def spectrum():
     #   --> detector response spectrum
     processed_spectrum = __process_spectrum(params, spectrum, True)
 
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
+    x_value, y_value = processed_spectrum.get("transmittance_noslit")
+
     # convert dictionary values to strings and return as JSON
     return {
         "success": True,
-        "x": list(processed_spectrum.keys()),
-        "y": [str(flt) for flt in processed_spectrum.values()],
+        "x": list(x_value),
+        "y": list(map(str, y_value)),
     }
 
 
@@ -88,11 +91,14 @@ def background():
     #   --> detector response spectrum
     processed_spectrum = __process_spectrum(data, background_spectrum, True)
 
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
+    x_value, y_value = processed_spectrum.get("transmittance_noslit")
+
     # convert dictionary values to strings and return as JSON
     return {
         "success": True,
-        "x": list(processed_spectrum.keys()),
-        "y": [str(flt) for flt in processed_spectrum.values()],
+        "x": list(x_value),
+        "y": list(map(str, y_value)),
     }
 
 
