@@ -340,6 +340,24 @@ def __calc_wstep(resolution, zero_fill):
         elif zero_fill == 2:
             wstep = 0.00753012
 
+    elif resolution == 0.03125:
+
+        if zero_fill == 0:
+            wstep = 0.01506
+        elif zero_fill == 1:
+            wstep = 0.00753
+        elif zero_fill == 2:
+            wstep = 0.003765
+
+    elif resolution == 0.015625:
+
+        if zero_fill == 0:
+            wstep = 0.00753
+        elif zero_fill == 1:
+            wstep = 0.003765
+        elif zero_fill == 2:
+            wstep = 0.001883
+
     return wstep
 
 # ------------------------------

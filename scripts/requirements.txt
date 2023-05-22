@@ -5,9 +5,8 @@ specutils
 # used by flask
 flask
 flask-cors
-
-# used by fast
-fastapi
+wheel
+gunicorn
 
 # formatting
 black
