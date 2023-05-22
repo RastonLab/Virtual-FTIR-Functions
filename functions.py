@@ -276,7 +276,6 @@ def __calc_wstep(resolution, zero_fill):
         Returns:
             The calculated wstep
     """
-
     match resolution:
         case 1:
             match zero_fill:
@@ -324,6 +323,24 @@ def __calc_wstep(resolution, zero_fill):
                     wstep = 0.015060241
                 case 2:
                     wstep = 0.00753012
+
+        case  0.03125:
+            match zero_fill:
+                case 0:
+                    wstep = 0.01506
+                case 1:
+                    wstep = 0.00753
+                case 2:
+                    wstep = 0.003765
+
+        case 0.015625:
+            match zero_fill:
+                case 0:
+                    wstep = 0.00753
+                case 1:
+                    wstep = 0.003765
+                case 2:
+                    wstep = 0.001883
 
     return wstep
 
