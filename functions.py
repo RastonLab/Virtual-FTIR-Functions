@@ -244,18 +244,23 @@ def __param_check(params):
 
     # check if parameter names are correct
     valid_params = [
-        "minWave",
-        "maxWave",
+        "beamsplitter",
+        "detector",
+        "medium",
         "molecule",
         "pressure",
         "resolution",
-        "numScan",
+        "scan",
+        "source",
+        "waveMax",
+        "waveMin",
+        "window",
         "zeroFill",
         "source",
         "beamsplitter",
         "cellWindow",
         "detector",
-        "mole"
+        "mole",
     ]
 
     for key, value in params.items():
@@ -325,7 +330,7 @@ def __calc_wstep(resolution, zero_fill):
                 case 2:
                     wstep = 0.00753012
 
-        case  0.03125:
+        case 0.03125:
             match zero_fill:
                 case 0:
                     wstep = 0.01506
@@ -462,7 +467,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
             slabs.append(spec_AR_CaF2)
 
     # ----- c.2) cell windows -----
-    match params["cellWindow"]:
+    match params["window"]:
         case "CaF2":
             slabs.extend([spec_CaF2, spec_CaF2])
         case "ZnSe":
@@ -485,8 +490,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     spectrum = add_array(
         spectrum,
-        sum(np.random.normal(0, 800000000, (params["numScan"], len(w))))
-        / params["numScan"],
+        sum(np.random.normal(0, 800000000, (params["scan"], len(w)))) / params["scan"],
         var="transmittance_noslit",
     )
 
@@ -555,8 +559,8 @@ def __generate_spectrum(params):
         # ----- a.) transmission spectrum of gas sample -----
         #   https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
         spectrum = calc_spectrum(
-            params["minWave"],
-            params["maxWave"],
+            params["waveMin"],
+            params["waveMax"],
             molecule=params["molecule"],
             isotope="1,2,3",
             pressure=params["pressure"],
@@ -566,7 +570,7 @@ def __generate_spectrum(params):
             databank="hitran",
             verbose=False,
             warnings={"AccuracyError": "ignore"},
-            mole_fraction={params["molecule"]:params["mole"]}
+            mole_fraction={params["molecule"]: params["mole"]},
         )
     except radis.misc.warning.EmptyDatabaseError:
         return None, True, "error: No line in the specified wavenumber range"
@@ -585,14 +589,15 @@ def __generate_spectrum(params):
 
 
 def __find_peaks(x_data, y_data):
-
-    spectrum = Spectrum.from_array(x_data, y_data, "absorbance_noslit", wunit="cm-1", unit="")
-    new_spec = spectrum.to_specutils() # NOTE: this is the problem when wstep is < 0.01
+    spectrum = Spectrum.from_array(
+        x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
+    )
+    new_spec = spectrum.to_specutils()  # NOTE: this is the problem when wstep is < 0.01
     lines = find_lines_threshold(new_spec, noise_factor=1)
 
     peaks = {}
     for num, peak_type, _ in lines:
-        if (peak_type == "emission"):
+        if peak_type == "emission":
             index = x_data.index(float(num.value))
             peaks[float(num.value)] = y_data[index]
 
