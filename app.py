@@ -101,6 +101,15 @@ def background():
         "y": list(map(str, y_value)),
     }
 
+@app.route("/find_peaks", methods=["POST"])
+def find_peaks():
+    data = json.loads(request.data)
+
+    print("Got the request!")
+
+    return {
+        "success": True,
+    }
 
 # set debug to false in production environment
 if __name__ == "__main__":
