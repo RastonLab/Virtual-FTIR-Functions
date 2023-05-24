@@ -238,23 +238,24 @@ def __param_check(params):
     """
 
     # check if number of parameters is correct
-    if len(params) != 11:
+    if len(params) != 12:
         print("  not enough params. total params: %s" % (len(params)))
         return False
 
     # check if parameter names are correct
     valid_params = [
-        "minWave",
-        "maxWave",
+        "beamsplitter",
+        "detector",
+        "medium",
         "molecule",
         "pressure",
         "resolution",
-        "numScan",
-        "zeroFill",
+        "scan",
         "source",
-        "beamsplitter",
-        "cellWindow",
-        "detector",
+        "waveMax",
+        "waveMin",
+        "window",
+        "zeroFill",
     ]
 
     for key, value in params.items():
@@ -324,7 +325,7 @@ def __calc_wstep(resolution, zero_fill):
                 case 2:
                     wstep = 0.00753012
 
-        case  0.03125:
+        case 0.03125:
             match zero_fill:
                 case 0:
                     wstep = 0.01506
@@ -461,7 +462,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
             slabs.append(spec_AR_CaF2)
 
     # ----- c.2) cell windows -----
-    match params["cellWindow"]:
+    match params["window"]:
         case "CaF2":
             slabs.extend([spec_CaF2, spec_CaF2])
         case "ZnSe":
@@ -484,8 +485,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     spectrum = add_array(
         spectrum,
-        sum(np.random.normal(0, 800000000, (params["numScan"], len(w))))
-        / params["numScan"],
+        sum(np.random.normal(0, 800000000, (params["scan"], len(w)))) / params["scan"],
         var="transmittance_noslit",
     )
 
@@ -529,8 +529,8 @@ def __generate_spectrum(params):
         # ----- a.) transmission spectrum of gas sample -----
         #   https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
         spectrum = calc_spectrum(
-            params["minWave"],
-            params["maxWave"],
+            params["waveMin"],
+            params["waveMax"],
             molecule=params["molecule"],
             isotope="1,2,3",
             pressure=params["pressure"],
