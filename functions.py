@@ -506,6 +506,31 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     return spectrum
 
 
+def __process_background(raw_spectrum):
+    """
+    Accepts a spectrum generated using '__generate_spectrum()'.
+    A background by default has all y-values of one.
+
+        Parameters:
+            raw_spectrum (Spectrum object): The spectrum generated from 'calc_spectrum()'
+
+        Return:
+            The processed background sample with y-values of one
+    """
+
+    spec_zeroY = Spectrum(
+        {
+            "wavenumber": raw_spectrum.get_wavenumber(),
+            "transmittance_noslit": __zeroY(raw_spectrum.get_wavenumber()),
+        },
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="Background",
+    )
+
+    return spec_zeroY
+
+
 def __generate_spectrum(params):
     """
     Generates a spectrum using Radis's 'calc_spectrum()' function based
@@ -540,6 +565,7 @@ def __generate_spectrum(params):
             databank="hitran",
             verbose=False,
             warnings={"AccuracyError": "ignore"},
+            mole_fraction={params["molecule"]:params["mole"]}
         )
     except radis.misc.warning.EmptyDatabaseError:
         return None, True, "error: No line in the specified wavenumber range"
@@ -556,27 +582,3 @@ def __generate_spectrum(params):
 
     return spectrum, False, None
 
-
-def __process_background(raw_spectrum):
-    """
-    Accepts a spectrum generated using '__generate_spectrum()'.
-    A background by default has all y-values of one.
-
-        Parameters:
-            raw_spectrum (Spectrum object): The spectrum generated from 'calc_spectrum()'
-
-        Return:
-            The processed background sample with y-values of one
-    """
-
-    spec_zeroY = Spectrum(
-        {
-            "wavenumber": raw_spectrum.get_wavenumber(),
-            "transmittance_noslit": __zeroY(raw_spectrum.get_wavenumber()),
-        },
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="Background",
-    )
-
-    return spec_zeroY
