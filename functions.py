@@ -238,8 +238,8 @@ def __param_check(params):
     """
 
     # check if number of parameters is correct
-    if len(params) != 12:
-        print("  not enough params. total params: %s" % (len(params)))
+    if len(params) != 13:
+        print("  incorrect amount of params. total params: %s" % (len(params)))
         return False
 
     # check if parameter names are correct
@@ -247,6 +247,7 @@ def __param_check(params):
         "beamsplitter",
         "detector",
         "medium",
+        "mole",
         "molecule",
         "pressure",
         "resolution",
@@ -565,7 +566,7 @@ def __generate_spectrum(params):
             databank="hitran",
             verbose=False,
             warnings={"AccuracyError": "ignore"},
-            mole_fraction={params["molecule"]:params["mole"]}
+            mole_fraction={params["molecule"]: params["mole"]},
         )
     except radis.misc.warning.EmptyDatabaseError:
         return None, True, "error: No line in the specified wavenumber range"
@@ -581,4 +582,3 @@ def __generate_spectrum(params):
                 return None, True, str(e)
 
     return spectrum, False, None
-
