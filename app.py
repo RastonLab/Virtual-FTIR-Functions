@@ -108,11 +108,12 @@ def find_peaks():
 
     print("Got the request!")
 
-    peaks = __find_peaks(data["x"], data["y"])
+    peaks, intensity = __find_peaks(data["x"], data["y"])
 
     return {
         "success": True,
-        "peaks": peaks
+        "peaks": peaks,
+        "intensity": intensity
     }
 
 # set debug to false in production environment

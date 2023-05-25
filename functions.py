@@ -591,8 +591,11 @@ def __find_peaks(x_data, y_data):
     lines = find_lines_threshold(new_spec, noise_factor=1)
 
     peaks = []
+    intensity = []
     for num, peak_type, _ in lines:
         if (peak_type == "emission"):
             peaks.append(float(num.value))
-
-    return peaks
+            index = x_data.index(float(num.value))
+            intensity.append(y_data[index])
+            
+    return (peaks, intensity)
