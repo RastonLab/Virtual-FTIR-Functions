@@ -11,6 +11,7 @@ from functions import (
     __param_check,
     __process_background,
     __process_spectrum,
+    __find_peaks
 )
 
 app = Flask(__name__)
@@ -107,8 +108,11 @@ def find_peaks():
 
     print("Got the request!")
 
+    peaks = __find_peaks(data["x"], data["y"])
+
     return {
         "success": True,
+        "peaks": peaks
     }
 
 # set debug to false in production environment
