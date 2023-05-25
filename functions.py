@@ -590,12 +590,10 @@ def __find_peaks(x_data, y_data):
     new_spec = spectrum.to_specutils() # NOTE: this is the problem when wstep is < 0.01
     lines = find_lines_threshold(new_spec, noise_factor=1)
 
-    peaks = []
-    intensity = []
+    peaks = {}
     for num, peak_type, _ in lines:
         if (peak_type == "emission"):
-            peaks.append(float(num.value))
             index = x_data.index(float(num.value))
-            intensity.append(y_data[index])
-            
-    return (peaks, intensity)
+            peaks[float(num.value)] = y_data[index]
+
+    return peaks
