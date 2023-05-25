@@ -238,8 +238,8 @@ def __param_check(params):
     """
 
     # check if number of parameters is correct
-    if len(params) != 12:
-        print("  not enough params. total params: %s" % (len(params)))
+    if len(params) != 13:
+        print("  incorrect amount of params. total params: %s" % (len(params)))
         return False
 
     # check if parameter names are correct
@@ -247,6 +247,7 @@ def __param_check(params):
         "beamsplitter",
         "detector",
         "medium",
+        "mole",
         "molecule",
         "pressure",
         "resolution",
