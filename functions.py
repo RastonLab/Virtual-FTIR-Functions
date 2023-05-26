@@ -583,3 +583,17 @@ def __generate_spectrum(params):
 
     return spectrum, False, None
 
+
+def __find_peaks(x_data, y_data):
+
+    spectrum = Spectrum.from_array(x_data, y_data, "absorbance_noslit", wunit="cm-1", unit="")
+    new_spec = spectrum.to_specutils() # NOTE: this is the problem when wstep is < 0.01
+    lines = find_lines_threshold(new_spec, noise_factor=1)
+
+    peaks = {}
+    for num, peak_type, _ in lines:
+        if (peak_type == "emission"):
+            index = x_data.index(float(num.value))
+            peaks[float(num.value)] = y_data[index]
+
+    return peaks
