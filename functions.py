@@ -257,11 +257,6 @@ def __param_check(params):
         "waveMin",
         "window",
         "zeroFill",
-        "source",
-        "beamsplitter",
-        "cellWindow",
-        "detector",
-        "mole",
     ]
 
     for key, value in params.items():
@@ -587,7 +582,6 @@ def __generate_spectrum(params):
                 return None, True, str(e)
 
     return spectrum, False, None
-
 
 def __find_peaks(x_data, y_data):
     spectrum = Spectrum.from_array(
