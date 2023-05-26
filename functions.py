@@ -584,7 +584,7 @@ def __generate_spectrum(params):
     return spectrum, False, None
 
 
-def __find_peaks(x_data, y_data, threshold):
+def __find_peaks(x_data, y_data, threshold=0):
     spectrum = Spectrum.from_array(
         x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
     )

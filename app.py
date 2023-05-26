@@ -106,8 +106,6 @@ def background():
 def find_peaks():
     data = json.loads(request.data)
 
-    print("Got the request!")
-
     peaks= __find_peaks(data["x"], data["y"], data["threshold"])
 
     return {
