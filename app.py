@@ -108,10 +108,18 @@ def find_peaks():
 
     peaks= __find_peaks(data["x"], data["y"], float(data["threshold"]))
 
-    return {
-        "success": True,
-        "peaks": peaks,
-    }
+    if peaks:
+        return {
+            "success": True,
+            "peaks": peaks,
+            "error": None
+        }
+    else:
+        return {
+            "success": False,
+            "peaks": None,
+            "error": "wstep too small"
+        }
 
 # set debug to false in production environment
 if __name__ == "__main__":
