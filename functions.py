@@ -584,7 +584,7 @@ def __generate_spectrum(params):
     return spectrum, False, None
 
 
-def __find_peaks(x_data, y_data):
+def __find_peaks(x_data, y_data, threshold):
     spectrum = Spectrum.from_array(
         x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
     )
@@ -593,8 +593,8 @@ def __find_peaks(x_data, y_data):
 
     peaks = {}
     for num, peak_type, _ in lines:
-        if peak_type == "emission":
-            index = x_data.index(float(num.value))
+        index = x_data.index(float(num.value))
+        if peak_type == "emission" and y_data[index] >= threshold:
             peaks[float(num.value)] = y_data[index]
 
     return peaks

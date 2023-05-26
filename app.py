@@ -108,7 +108,7 @@ def find_peaks():
 
     print("Got the request!")
 
-    peaks= __find_peaks(data["x"], data["y"])
+    peaks= __find_peaks(data["x"], data["y"], data["threshold"])
 
     return {
         "success": True,
