@@ -5,7 +5,7 @@ jobs:
   build-and-push:
     machine:
       image: ubuntu-2004:202101-01
-      docker_layer_caching: true
+      docker_layer_caching: false
     resource_class: arm.medium
     steps:
       - run: |
