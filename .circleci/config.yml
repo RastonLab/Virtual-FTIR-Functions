@@ -13,6 +13,7 @@ jobs:
           registry: ghcr.io
       - docker/build:
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          registry: ghcr.io
       - docker/push:
           digest-path: /tmp/digest.txt
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
