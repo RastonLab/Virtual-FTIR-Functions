@@ -589,7 +589,9 @@ def __find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
         spectrum = Spectrum.from_array(
             x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
         )
-        new_spec = spectrum.to_specutils()  # NOTE: this is the problem when wstep is < 0.01
+        new_spec = (
+            spectrum.to_specutils()
+        )  # NOTE: this is the problem when wstep is < 0.01
         lines = find_lines_threshold(new_spec, noise_factor=1)
     except:
         return None

@@ -11,7 +11,7 @@ from functions import (
     __param_check,
     __process_background,
     __process_spectrum,
-    __find_peaks
+    __find_peaks,
 )
 
 app = Flask(__name__)
@@ -102,24 +102,24 @@ def background():
         "y": list(map(str, y_value)),
     }
 
+
 @app.route("/find_peaks", methods=["POST"])
 def find_peaks():
     data = json.loads(request.data)
 
-    peaks= __find_peaks(data["x"], data["y"], float(data["lowerbound"]), float(data["upperbound"]), float(data["threshold"]))
+    peaks = __find_peaks(
+        data["x"],
+        data["y"],
+        float(data["lowerbound"]),
+        float(data["upperbound"]),
+        float(data["threshold"]),
+    )
 
     if peaks:
-        return {
-            "success": True,
-            "peaks": peaks,
-            "error": None
-        }
+        return {"success": True, "peaks": peaks, "error": None}
     else:
-        return {
-            "success": False,
-            "peaks": None,
-            "error": "wstep too small"
-        }
+        return {"success": False, "peaks": None, "error": "wstep too small"}
+
 
 # set debug to false in production environment
 if __name__ == "__main__":
