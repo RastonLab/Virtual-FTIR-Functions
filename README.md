@@ -1,4 +1,5 @@
 # Virtual-FTIR-Functions
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/RastonLab/Virtual-FTIR-Functions/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/RastonLab/Virtual-FTIR-Functions/tree/main)
 
 This repository contains the back-end of the [Virtual FTIR Spectrometer](https://github.com/RastonLab/Virtual-FTIR-Spectrometer).
 
