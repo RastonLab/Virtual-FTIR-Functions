@@ -9,7 +9,8 @@ jobs:
     resource_class: arm.medium
     steps:
       - checkout
-      - docker/check
+      - docker/check:
+          registry: ghcr.io
       - docker/build:
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
       - docker/push:
