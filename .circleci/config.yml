@@ -28,4 +28,8 @@ jobs:
 workflows:
   build:
     jobs:
-      - build-and-push
+      - build-and-push:
+          filters:
+            branches:
+              only:
+                - main
