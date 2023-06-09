@@ -17,6 +17,6 @@ FROM python:3.10-slim-bullseye
 # copy pip packages from base
 COPY --from=base /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 
-COPY ./*.py .
+COPY ./*.py /app/
 
 CMD ["python", "app.py"]
