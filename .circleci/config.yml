@@ -8,7 +8,8 @@ jobs:
       docker_layer_caching: true
     resource_class: arm.medium
     steps:
-      - run: export REPO_NAME=$(printf '%s\n' "${CIRCLE_PROJECT_REPONAME,,}")
+      - run: |
+          echo "export REPO_NAME=$(printf '%s\n' \"${CIRCLE_PROJECT_REPONAME,,}\")" >> $BASH_ENV
       - checkout
       - docker/check:
           docker-username: CIRCLE_PROJECT_USERNAME
