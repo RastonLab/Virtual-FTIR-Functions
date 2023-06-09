@@ -1,0 +1,31 @@
+version: 2.1
+orbs:
+  docker: circleci/docker@2.2.0
+jobs:
+  build-and-push:
+    machine:
+      image: ubuntu-2004:202101-01
+      docker_layer_caching: true
+    resource_class: arm.medium
+    steps:
+      - run: |
+          echo "export REPO_NAME=$(printf '%s\n' \"${CIRCLE_PROJECT_REPONAME,,}\")" >> $BASH_ENV && \
+          echo "export USER=$(printf '%s\n' \"${CIRCLE_PROJECT_USERNAME,,}\")" >> $BASH_ENV          
+      - checkout
+      - docker/check:
+          docker-username: CIRCLE_PROJECT_USERNAME
+          registry: ghcr.io
+      - docker/build:
+          image: $USER/$REPO_NAME
+          registry: ghcr.io
+      - docker/push:
+          digest-path: /tmp/digest.txt
+          image: $USER/$REPO_NAME
+          registry: ghcr.io
+      - run:
+          command: |
+            echo "Digest is: $(</tmp/digest.txt)"
+workflows:
+  build:
+    jobs:
+      - build-and-push
