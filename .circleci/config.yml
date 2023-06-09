@@ -10,6 +10,7 @@ jobs:
     steps:
       - checkout
       - docker/check:
+          docker-username: CIRCLE_PROJECT_USERNAME
           registry: ghcr.io
       - docker/build:
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
