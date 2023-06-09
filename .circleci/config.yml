@@ -8,16 +8,17 @@ jobs:
       docker_layer_caching: true
     resource_class: arm.medium
     steps:
+      - run: export REPO_NAME=$(printf '%s\n' "${CIRCLE_PROJECT_REPONAME,,}")
       - checkout
       - docker/check:
           docker-username: CIRCLE_PROJECT_USERNAME
           registry: ghcr.io
       - docker/build:
-          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          image: $CIRCLE_PROJECT_USERNAME/$REPO_NAME
           registry: ghcr.io
       - docker/push:
           digest-path: /tmp/digest.txt
-          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          image: $CIRCLE_PROJECT_USERNAME/$REPO_NAME
           registry: ghcr.io
       - run:
           command: |
