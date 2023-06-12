@@ -591,19 +591,16 @@ def __find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
         )
         new_spec = (
             spectrum.to_specutils()
-        )  # NOTE: this is the problem when wstep is < 0.01
+        )
         lines = find_lines_threshold(new_spec, noise_factor=1)
     except:
         return None
-
-    print(lowerbound)
-    print(upperbound)
 
     peaks = {}
     for num, peak_type, _ in lines:
         index = x_data.index(float(num.value))
         if x_data[index] >= lowerbound and x_data[index] <= upperbound:
             if peak_type == "emission" and y_data[index] >= threshold:
-                peaks[float(num.value)] = y_data[index]
+                peaks[round(float(num.value), 4)] = round(y_data[index], 4)
 
     return peaks
