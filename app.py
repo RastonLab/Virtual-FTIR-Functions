@@ -102,12 +102,14 @@ def background():
         "y": list(map(str, y_value)),
     }
 
+import time
+
 @app.route("/find_peaks", methods=["POST"])
 def find_peaks():
     data = json.loads(request.data)
 
     peaks= __find_peaks(data["x"], data["y"], float(data["lowerbound"]), float(data["upperbound"]), float(data["threshold"]))
-
+    
     if peaks:
         return {
             "success": True,
