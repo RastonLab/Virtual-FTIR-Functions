@@ -14,9 +14,13 @@ RUN pip3 install --no-index --find-links=/app/packages -r /app/scripts/requireme
 
 FROM python:3.10-slim-bullseye
 
+WORKDIR /app
+
 # copy pip packages from base
 COPY --from=base /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 
+COPY --from=base /usr/local/bin/gunicorn /usr/local/bin/gunicorn
+
 COPY ./*.py /app/
 
-CMD ["python", "app.py"]
+CMD gunicorn --bind 0.0.0.0:5000 wsgi:app
