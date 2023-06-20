@@ -484,24 +484,31 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
 
     # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
-    spectrum = add_array(
-        spectrum,
-        sum(np.random.normal(0, 800000000, (params["scan"], len(w)))) / params["scan"],
-        var="transmittance_noslit",
-    )
+    
+    num_scans = params["scan"]
+    # the maximum scans done per iteration
+    scans_per_group = 100
+    # how many maximized iterations
+    groups = num_scans // scans_per_group
 
-    # Post-processing - Find Peaks
-    # Not done on background samples
-    # https://radis.readthedocs.io/en/latest/auto_examples/plot_specutils_processing.html#sphx-glr-auto-examples-plot-specutils-processing-py
-    # if find_peaks:
-    #     find_peaks = spectrum.to_specutils()
-    #     noise_region = SpectralRegion(
-    #         (1 / data["minWave"]) / u.cm, (1 / data["maxWave"]) / u.cm
-    #     )
-    #     find_peaks = noise_region_uncertainty(find_peaks, noise_region)
-    #     lines = find_lines_threshold(find_peaks, noise_factor=6)
-    #     print()
-    #     print(lines)
+    for _ in range(groups):
+        spectrum = add_array(
+            spectrum,
+            sum(np.random.normal(0, 800000000, (scans_per_group, len(w)))) / num_scans,
+            var="transmittance_noslit",
+        )
+    
+    # does the remaining scans when the number of scans does not evenly divide into 100
+    # ex. 115 scans -> the first 100 are done above; the last 15 are done here
+    if scans_per_group * groups < num_scans:
+        # the number of scans done above == scans_per_group * groups
+        diff = num_scans - (scans_per_group * groups)
+        spectrum = add_array(
+            spectrum,
+            sum(np.random.normal(0, 800000000, (diff, len(w)))) / params["scan"],
+            var="transmittance_noslit",
+        ) 
+
 
     # return processed spectrum
     return spectrum
@@ -565,7 +572,9 @@ def __generate_spectrum(params):
             wstep=wstep,
             databank="hitran",
             verbose=False,
-            warnings={"AccuracyError": "ignore"},
+            warnings={
+                "AccuracyError": "ignore",
+                "AccuracyWarning": "ignore"},
             mole_fraction={params["molecule"]: params["mole"]},
         )
     except radis.misc.warning.EmptyDatabaseError:
