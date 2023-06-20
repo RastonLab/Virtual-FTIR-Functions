@@ -487,7 +487,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     
     num_scans = params["scan"]
     # the maximum scans done per iteration
-    scans_per_group = 10
+    scans_per_group = 1
     # how many maximized iterations
     groups = num_scans // scans_per_group
 
