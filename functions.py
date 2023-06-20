@@ -2,7 +2,7 @@ import astropy.units as u
 import numpy as np
 import radis
 from radis import SerialSlabs, Spectrum, calc_spectrum
-from radis.spectrum.operations import add_array, multiply
+from radis.spectrum.operations import add_array, multiply, concat_spectra
 from specutils import SpectralRegion
 from specutils.fitting import find_lines_derivative, find_lines_threshold
 from specutils.manipulation import noise_region_uncertainty
@@ -346,10 +346,11 @@ def __calc_wstep(resolution, zero_fill):
 
     return wstep
 
-def __multiscan(w, num_scans):
+def __multiscan(spectrum, num_scans):
  # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     
+    w = spectrum.get_wavenumber()
     # the maximum scans done per iteration
     scans_per_group = 80
     # how many maximized iterations
@@ -369,7 +370,7 @@ def __multiscan(w, num_scans):
         diff = num_scans - (scans_per_group * groups)
         spectrum = add_array(
             spectrum,
-            sum(np.random.normal(0, 800000000, (diff, len(w)))) / params["scan"],
+            sum(np.random.normal(0, 800000000, (diff, len(w)))) / num_scans,
             var="transmittance_noslit",
         ) 
 
@@ -509,8 +510,29 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
 
     # spectrum.normalize(normalize_how="mean", inplace=True, force=True)
+    
+    default = False
+    if default:
+        # Default single spectra scan
+        __multiscan(spectrum, w, params["scan"])
 
-    __multiscan(w, params["scan"])
+    else:
+
+        # Crop spectrum into two halves inorder to minimize memory space in multiscan
+        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
+
+        midpoint = (params["waveMin"] + params["waveMax"]) / 2
+        first_half = Spectrum.crop(spectrum,wmax=midpoint, wunit='cm-1', inplace=False)
+        second_half = Spectrum.crop(spectrum, wmin=midpoint, wunit='cm-1', inplace=False)
+
+        # add noise to both halves
+        __multiscan(first_half, params["scan"])
+        __multiscan(second_half, params["scan"])
+
+        # stitch the spectra back together once noise has been added
+        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
+
+        spectrum = concat_spectra(first_half, second_half, var="transmittance_noslit")
 
 
     # return processed spectrum
