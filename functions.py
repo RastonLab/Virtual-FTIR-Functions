@@ -346,6 +346,34 @@ def __calc_wstep(resolution, zero_fill):
 
     return wstep
 
+def __multiscan(w, num_scans):
+ # add random noise to spectrum
+    #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
+    
+    # the maximum scans done per iteration
+    scans_per_group = 80
+    # how many maximized iterations
+    groups = num_scans // scans_per_group
+
+    for _ in range(groups):
+        spectrum = add_array(
+            spectrum,
+            sum(np.random.normal(0, 800000000, (scans_per_group, len(w)))) / num_scans,
+            var="transmittance_noslit",
+        )
+    
+    # does the remaining scans when the number of scans does not evenly divide into 100
+    # ex. 115 scans -> the first 100 are done above; the last 15 are done here
+    if scans_per_group * groups < num_scans:
+        # the number of scans done above == scans_per_group * groups
+        diff = num_scans - (scans_per_group * groups)
+        spectrum = add_array(
+            spectrum,
+            sum(np.random.normal(0, 800000000, (diff, len(w)))) / params["scan"],
+            var="transmittance_noslit",
+        ) 
+
+
 
 # ------------------------------
 # ----- Spectrum Processing -----
@@ -482,32 +510,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
 
     # spectrum.normalize(normalize_how="mean", inplace=True, force=True)
 
-    # add random noise to spectrum
-    #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
-    
-    num_scans = params["scan"]
-    # the maximum scans done per iteration
-    scans_per_group = 80
-    # how many maximized iterations
-    groups = num_scans // scans_per_group
-
-    for _ in range(groups):
-        spectrum = add_array(
-            spectrum,
-            sum(np.random.normal(0, 800000000, (scans_per_group, len(w)))) / num_scans,
-            var="transmittance_noslit",
-        )
-    
-    # does the remaining scans when the number of scans does not evenly divide into 100
-    # ex. 115 scans -> the first 100 are done above; the last 15 are done here
-    if scans_per_group * groups < num_scans:
-        # the number of scans done above == scans_per_group * groups
-        diff = num_scans - (scans_per_group * groups)
-        spectrum = add_array(
-            spectrum,
-            sum(np.random.normal(0, 800000000, (diff, len(w)))) / params["scan"],
-            var="transmittance_noslit",
-        ) 
+    __multiscan(w, params["scan"])
 
 
     # return processed spectrum
