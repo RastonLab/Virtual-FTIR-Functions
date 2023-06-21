@@ -2,7 +2,7 @@ import astropy.units as u
 import numpy as np
 import radis
 from radis import SerialSlabs, Spectrum, calc_spectrum
-from radis.spectrum.operations import add_array, multiply, concat_spectra
+from radis.spectrum.operations import add_array, multiply, concat_spectra, crop
 from specutils import SpectralRegion
 from specutils.fitting import find_lines_derivative, find_lines_threshold
 from specutils.manipulation import noise_region_uncertainty
@@ -513,34 +513,41 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
 
     # spectrum.normalize(normalize_how="mean", inplace=True, force=True)
 
+
+    # Calc the diff, not hard numbers
+    # store the sections in a list <-- list comprehension!!!
+    # pass through multiscan
+    # loop over the array, tacking sections onto a main spectrum in order
+
     # Crop spectrum into two halves inorder to minimize memory space in multiscan
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
 
-    # calculate where the spectrum will be split 
-    midpoint = (params["waveMin"] + params["waveMax"]) / 2
-    first_break = (params["waveMin"] + midpoint) / 2
-    third_break = (midpoint + params["waveMax"]) / 2
+    num_segments = 16
+    split = (params["waveMin"] + params["waveMax"]) / num_segments
+    spectra_segments = []          # Create a list of size 6, default value of None
 
-    # Spilt the spectra into four sections
-    # formatted (with optional parameters) for clarity
-    first_quarter   = Spectrum.crop(spectrum, wmin=params["waveMin"],   wmax=first_break,       inplace=False)
-    second_quarter  = Spectrum.crop(spectrum, wmin=first_break,         wmax=midpoint,          inplace=False)
-    third_quarter   = Spectrum.crop(spectrum, wmin=midpoint,            wmax=third_break,       inplace=False)
-    fourth_quarter  = Spectrum.crop(spectrum, wmin=third_break,         wmax=params["waveMax"],  inplace=False)
+    # Range for the first segment
+    min_index = params["waveMin"]
+    max_index = params["waveMin"] + split
 
-    # add noise to all quarters
-    first_quarter = __multiscan(first_quarter, params["scan"])
-    second_quarter = __multiscan(second_quarter, params["scan"])
-    third_quarter = __multiscan(third_quarter, params["scan"])
-    fourth_quarter = __multiscan(fourth_quarter, params["scan"])
+    # Split and add noise; store in list
+    for _ in range(num_segments):
+        segment = crop(spectrum, min_index, max_index, 'cm-1', inplace=False)
+        segment = __multiscan(segment, params["scan"])
+        spectra_segments.append(segment)
+        min_index = max_index
+        max_index += split
     
     # stitch the spectra back together once noise has been added
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
+    noisey_spectrum = spectra_segments[0]
 
-    first_half, second_half = concat_spectra(first_quarter, second_quarter) \
-                            , concat_spectra(third_quarter, fourth_quarter)
-    spectrum = concat_spectra(first_half, second_half)
+    for segment in spectra_segments:
+        if segment is not noisey_spectrum:
+            noisey_spectrum = concat_spectra(noisey_spectrum, segment)
 
+    spectrum = noisey_spectrum
+    
     # return processed spectrum
     return spectrum
 
