@@ -347,10 +347,11 @@ def __calc_wstep(resolution, zero_fill):
     return wstep
 
 def __multiscan(spectrum, num_scans):
- # add random noise to spectrum
+    # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     
     w = spectrum.get_wavenumber()
+
     # the maximum scans done per iteration
     scans_per_group = 1
     # how many maximized iterations
@@ -374,6 +375,7 @@ def __multiscan(spectrum, num_scans):
             var="transmittance_noslit",
         ) 
 
+    return spectrum
 
 
 # ------------------------------
@@ -510,30 +512,34 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
 
     # spectrum.normalize(normalize_how="mean", inplace=True, force=True)
+
+    # Crop spectrum into two halves inorder to minimize memory space in multiscan
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
+
+    # calculate where the spectrum will be split 
+    midpoint = (params["waveMin"] + params["waveMax"]) / 2
+    first_break = (params["waveMin"] + midpoint) / 2
+    third_break = (midpoint + params["waveMax"]) / 2
+
+    # Spilt the spectra into four sections
+    # formatted (with optional parameters) for clarity
+    first_quarter   = Spectrum.crop(spectrum, wmin=params["waveMin"],   wmax=first_break,       inplace=False)
+    second_quarter  = Spectrum.crop(spectrum, wmin=first_break,         wmax=midpoint,          inplace=False)
+    third_quarter   = Spectrum.crop(spectrum, wmin=midpoint,            wmax=third_break,       inplace=False)
+    fourth_quarter  = Spectrum.crop(spectrum, wmin=third_break,         wmax=params["waveMax"],  inplace=False)
+
+    # add noise to all quarters
+    first_quarter = __multiscan(first_quarter, params["scan"])
+    second_quarter = __multiscan(second_quarter, params["scan"])
+    third_quarter = __multiscan(third_quarter, params["scan"])
+    fourth_quarter = __multiscan(fourth_quarter, params["scan"])
     
-    default = False
-    if default:
-        # Default single spectra scan
-        __multiscan(spectrum, w, params["scan"])
+    # stitch the spectra back together once noise has been added
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
 
-    else:
-
-        # Crop spectrum into two halves inorder to minimize memory space in multiscan
-        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
-
-        midpoint = (params["waveMin"] + params["waveMax"]) / 2
-        first_half = Spectrum.crop(spectrum,wmax=midpoint, wunit='cm-1', inplace=False)
-        second_half = Spectrum.crop(spectrum, wmin=midpoint, wunit='cm-1', inplace=False)
-
-        # add noise to both halves
-        __multiscan(first_half, params["scan"])
-        __multiscan(second_half, params["scan"])
-
-        # stitch the spectra back together once noise has been added
-        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
-
-        spectrum = concat_spectra(first_half, second_half, var="transmittance_noslit")
-
+    first_half, second_half = concat_spectra(first_quarter, second_quarter) \
+                            , concat_spectra(third_quarter, fourth_quarter)
+    spectrum = concat_spectra(first_half, second_half)
 
     # return processed spectrum
     return spectrum
