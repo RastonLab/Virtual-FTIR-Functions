@@ -353,7 +353,7 @@ def __multiscan(spectrum, num_scans):
     w = spectrum.get_wavenumber()
 
     # the maximum scans done per iteration
-    scans_per_group = 20
+    scans_per_group = 10
     # how many maximized iterations
     groups = num_scans // scans_per_group
 
