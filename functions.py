@@ -537,13 +537,14 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
         spectra_segments.append(segment)
         min_index = max_index
         max_index += split
-    
+
+    [print(segment) for segment in spectra_segments]     
     # stitch the spectra back together once noise has been added
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
     noisey_spectrum = spectra_segments[0]
 
     for segment in spectra_segments:
-        if segment is not noisey_spectrum:
+        if len(segment.get_wavenumber()) != 0 and segment is not noisey_spectrum:
             noisey_spectrum = concat_spectra(noisey_spectrum, segment)
 
     spectrum = noisey_spectrum
