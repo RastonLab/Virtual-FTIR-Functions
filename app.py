@@ -84,7 +84,13 @@ def background():
 
     # perform:
     #   --> set all y-values to one
-    background_spectrum = __process_background(spectrum)
+    try:
+        background_spectrum = __process_background(spectrum)
+    except:
+        return {
+            "success": False,
+            "text": "Background Failure"
+        }
 
     # perform:
     #   --> blackbody spectrum of source (sPlanck)
