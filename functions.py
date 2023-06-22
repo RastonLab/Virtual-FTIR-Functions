@@ -7,6 +7,8 @@ from specutils import SpectralRegion
 from specutils.fitting import find_lines_derivative, find_lines_threshold
 from specutils.manipulation import noise_region_uncertainty
 
+import gc
+
 
 # -------------------------------------
 # ------------- blackbody -------------
@@ -522,7 +524,8 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     # Crop spectrum into two halves inorder to minimize memory space in multiscan
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
 
-    num_segments = 54
+    num_segments = 1
+
     split = (params["waveMin"] + params["waveMax"]) / num_segments
     spectra_segments = []          # Create a list of size 6, default value of None
 
@@ -534,6 +537,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     for _ in range(num_segments):
         segment = crop(spectrum, min_index, max_index, 'cm-1', inplace=False)
         segment = __multiscan(segment, params["scan"])
+        gc.collect()
         spectra_segments.append(segment)
         min_index = max_index
         max_index += split
