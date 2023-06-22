@@ -355,7 +355,7 @@ def __multiscan(spectrum, num_scans):
     w = spectrum.get_wavenumber()
 
     # the maximum scans done per iteration
-    scans_per_group = 1
+    scans_per_group = 10
     # how many maximized iterations
     groups = num_scans // scans_per_group
 
@@ -525,7 +525,8 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
     try:
 
-        num_segments = 256
+        num_segments = 1
+
         split = (params["waveMin"] + params["waveMax"]) / num_segments
         spectra_segments = []          # Create a list of size 6, default value of None
 
