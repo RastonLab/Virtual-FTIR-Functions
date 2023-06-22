@@ -524,7 +524,7 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
     # Crop spectrum into two halves inorder to minimize memory space in multiscan
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
 
-    num_segments = 1
+    num_segments = 16
 
     split = (params["waveMin"] + params["waveMax"]) / num_segments
     spectra_segments = []          # Create a list of size 6, default value of None
