@@ -523,36 +523,38 @@ def __process_spectrum(params, raw_spectrum, find_peaks):
 
     # Crop spectrum into two halves inorder to minimize memory space in multiscan
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
+    try:
 
-    num_segments = 256
+        num_segments = 16
 
-    split = (params["waveMin"] + params["waveMax"]) / num_segments
-    spectra_segments = []          # Create a list of size 6, default value of None
+        split = (params["waveMin"] + params["waveMax"]) / num_segments
+        spectra_segments = []          # Create a list of size 6, default value of None
 
-    # Range for the first segment
-    min_index = params["waveMin"]
-    max_index = params["waveMin"] + split
+        # Range for the first segment
+        min_index = params["waveMin"]
+        max_index = params["waveMin"] + split
 
-    # Split and add noise; store in list
-    for _ in range(num_segments):
-        segment = crop(spectrum, min_index, max_index, 'cm-1', inplace=False)
-        segment = __multiscan(segment, params["scan"])
-        gc.collect()
-        spectra_segments.append(segment)
-        min_index = max_index
-        max_index += split
+        # Split and add noise; store in list
+        for _ in range(num_segments):
+            segment = crop(spectrum, min_index, max_index, 'cm-1', inplace=False)
+            segment = __multiscan(segment, params["scan"])
+            gc.collect()
+            spectra_segments.append(segment)
+            min_index = max_index
+            max_index += split
 
-    [print(segment) for segment in spectra_segments]     
-    # stitch the spectra back together once noise has been added
-    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
-    noisey_spectrum = spectra_segments[0]
+        [print(segment) for segment in spectra_segments]     
+        # stitch the spectra back together once noise has been added
+        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
+        noisey_spectrum = spectra_segments[0]
 
-    for segment in spectra_segments:
-        if len(segment.get_wavenumber()) != 0 and segment is not noisey_spectrum:
-            noisey_spectrum = concat_spectra(noisey_spectrum, segment)
+        for segment in spectra_segments:
+            if len(segment.get_wavenumber()) != 0 and segment is not noisey_spectrum:
+                noisey_spectrum = concat_spectra(noisey_spectrum, segment)
 
-    spectrum = noisey_spectrum
-    
+        spectrum = noisey_spectrum
+    except:
+        return None
     # return processed spectrum
     return spectrum
 
