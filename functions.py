@@ -383,7 +383,7 @@ def __multiscan(spectrum, num_scans):
 # ------------------------------
 # ----- Spectrum Processing -----
 # ------------------------------
-def __process_spectrum(params, raw_spectrum, find_peaks):
+def __process_spectrum(params, raw_spectrum):
     """
     The following function takes a 'raw spectrum' generated using Radis's
     'calc_spectrum()' function and performing custom equations that virtualize
