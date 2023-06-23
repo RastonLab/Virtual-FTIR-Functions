@@ -48,7 +48,7 @@ def spectrum():
     #   --> blackbody spectrum of source (sPlanck)
     #   --> transmission spectrum of beamsplitter and cell windows
     #   --> detector response spectrum
-    processed_spectrum = __process_spectrum(params, spectrum, True)
+    processed_spectrum = __process_spectrum(params, spectrum)
 
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
     x_value, y_value = processed_spectrum.get("transmittance_noslit")
@@ -114,6 +114,19 @@ def background():
             "x": list(x_value),
             "y": list(map(str, y_value)),
         }
+
+    # perform:
+    #   --> blackbody spectrum of source (sPlanck)
+    #   --> transmission spectrum of beamsplitter and cell windows
+    #   --> detector response spectrum
+    processed_spectrum = __process_spectrum(data, background_spectrum)
+
+    if processed_spectrum is None:
+        return {
+            "success": False,
+            "text": "Issue Processing Data"
+        }
+      
     except:
        return {
             "success": False,
