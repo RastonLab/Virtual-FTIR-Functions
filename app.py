@@ -63,33 +63,56 @@ def spectrum():
 
 @app.route("/background", methods=["POST"])
 def background():
-    # put incoming JSON into a dictionary
-    data = json.loads(request.data)
-
-    # verify user input is valid
-    if not __param_check(data):
-        return {
-            "success": False,
-            "text": "Parameter check failed",
-        }
-
-    # perform:
-    #   --> transmission spectrum of gas sample (calc_spectrum)
-    spectrum, error, message = __generate_spectrum(data)
-    if error:
-        return {
-            "success": False,
-            "text": message,
-        }
-
-    # perform:
-    #   --> set all y-values to one
     try:
-        background_spectrum = __process_background(spectrum)
-    except:
+        # put incoming JSON into a dictionary
+        data = json.loads(request.data)
+    
+        # verify user input is valid
+        if not __param_check(data):
+            return {
+                "success": False,
+                "text": "Parameter check failed",
+            }
+    
+        # perform:
+        #   --> transmission spectrum of gas sample (calc_spectrum)
+        spectrum, error, message = __generate_spectrum(data)
+        if error:
+            return {
+                "success": False,
+                "text": message,
+            }
+    
+        # perform:
+        #   --> set all y-values to one
+        try:
+            background_spectrum = __process_background(spectrum)
+        except:
+            return {
+                "success": False,
+                "text": "Background Failure"
+            }
+    
+        # perform:
+        #   --> blackbody spectrum of source (sPlanck)
+        #   --> transmission spectrum of beamsplitter and cell windows
+        #   --> detector response spectrum
+        processed_spectrum = __process_spectrum(data, background_spectrum, True)
+    
+        if processed_spectrum is None:
+            return {
+                "success": False,
+                "text": "Issue Processing Data"
+            }
+    
+        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
+        x_value, y_value = processed_spectrum.get("transmittance_noslit")
+    
+        # convert dictionary values to strings and return as JSON
         return {
-            "success": False,
-            "text": "Background Failure"
+            "success": True,
+            "x": list(x_value),
+            "y": list(map(str, y_value)),
         }
 
     # perform:
@@ -103,16 +126,12 @@ def background():
             "success": False,
             "text": "Issue Processing Data"
         }
-
-    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
-    x_value, y_value = processed_spectrum.get("transmittance_noslit")
-
-    # convert dictionary values to strings and return as JSON
-    return {
-        "success": True,
-        "x": list(x_value),
-        "y": list(map(str, y_value)),
-    }
+      
+    except:
+       return {
+            "success": False,
+            "text": "Issue Processing Data"
+        } 
 
 
 @app.route("/find_peaks", methods=["POST"])
