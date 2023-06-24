@@ -97,7 +97,7 @@ def background():
         #   --> blackbody spectrum of source (sPlanck)
         #   --> transmission spectrum of beamsplitter and cell windows
         #   --> detector response spectrum
-        processed_spectrum = __process_spectrum(data, background_spectrum, True)
+        processed_spectrum = __process_spectrum(data, background_spectrum)
     
         if processed_spectrum is None:
             return {
