@@ -149,7 +149,7 @@ def find_peaks():
     if peaks:
         return {"success": True, "peaks": peaks, "text": None}
     else:
-        return {"success": False, "peaks": None, "text": "wstep too small"}
+        return {"success": False, "peaks": None, "text": "Failed to find peaks"}
 
 
 # set debug to false in production environment
