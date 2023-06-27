@@ -98,7 +98,7 @@ def background():
         #   --> transmission spectrum of beamsplitter and cell windows
         #   --> detector response spectrum
         processed_spectrum = __process_spectrum(data, background_spectrum)
-
+        
         if processed_spectrum is None:
             return {
                 "success": False,
@@ -116,7 +116,7 @@ def background():
     except:
        return {
             "success": False,
-            "text": "Issue Processing Data"
+            "text": "Issue Executing Scanning Procedures"
         } 
 
 
