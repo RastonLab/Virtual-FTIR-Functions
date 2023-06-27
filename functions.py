@@ -544,7 +544,7 @@ def __process_spectrum(params, raw_spectrum):
     #     spectrum = noisey_spectrum
     # except:
     #     return None
-
+    spectrum = __multiscan(spectrum, params["scan"])
     # return processed spectrum
     return spectrum
 
