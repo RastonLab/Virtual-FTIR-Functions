@@ -7,9 +7,6 @@ from specutils import SpectralRegion
 from specutils.fitting import find_lines_derivative, find_lines_threshold
 from specutils.manipulation import noise_region_uncertainty
 
-import gc
-
-
 # -------------------------------------
 # ------------- blackbody -------------
 # -------------------------------------
@@ -24,14 +21,11 @@ def __sPlanck(spectrum, source_temp):
             Returns:
                 The y-values of a Blackbody spectrum
     """
-
-    H = 6.62606957e-34
-    C = 2.99792458e8
-    K_B = 1.3806488e-23
-
-    return ((0.2 * H * (C**2)) / (((spectrum * (10**-9)) ** 4) * spectrum)) * (
-        1 / (np.exp((H * C) / ((spectrum * (10**-9)) * K_B * source_temp)) - 1)
-    )
+    k_cgs = 1.380649e-16
+    h_cgs = 6.62607015e-27
+    c_cgs = 2.99792458e10
+    
+    return (2 * h_cgs * c_cgs ** 2 * spectrum ** 3) * (1 / (np.exp(h_cgs * c_cgs * spectrum / (k_cgs * source_temp)) - 1))
 
 
 # --------------------------------------
@@ -48,7 +42,7 @@ def __CaF2(spectrum):
                 The y-values associated with a CaF2 cell window
     """
 
-    return (0.93091) / (1 + (11.12929 / (spectrum / 1000)) ** -12.43933) ** 4.32574
+    return (0.93091) / (1 + (11.12929 / (10000 / spectrum)) ** -12.43933) ** 4.32574
 
 
 def __ZnSe(spectrum):
@@ -62,7 +56,7 @@ def __ZnSe(spectrum):
                 The y-values associated with a ZnSe cell window
     """
 
-    x_um = spectrum / 1000
+    x_um = 10000 / spectrum
     return (0.71015) / ((1 + (20.99353 / x_um) ** -19.31355) ** 1.44348) + -0.13265 / (
         2.25051 * np.sqrt(np.pi / (4 * np.log(2)))
     ) * np.exp(-4 * np.log(2) * ((x_um - 16.75) ** 2) / (2.25051**2))
@@ -79,7 +73,7 @@ def __sapphire(spectrum):
                 The y-values associated with a sapphire window
     """
 
-    return 0.78928 / (1 + (11.9544 / (spectrum / 1000)) ** -12.07226) ** 6903.57039
+    return 0.78928 / (1 + (11.9544 / (10000 / spectrum)) ** -12.07226) ** 6903.57039
 
 
 def __AR_ZnSe(spectrum):
@@ -93,7 +87,7 @@ def __AR_ZnSe(spectrum):
                 The y-values associated with a AR_ZnSe beamsplitter
     """
 
-    x_um = spectrum / 1000
+    x_um = 10000 / spectrum
     return (
         (0.82609) / ((1 + ((34.63971 / x_um) ** -8.56269)) ** 186.34792)
         + -0.47
@@ -137,7 +131,7 @@ def __AR_CaF2(spectrum):
                 The y-values associated with a AR_CaF2 beamsplitter
     """
 
-    x_um = spectrum / 1000
+    x_um = 10000 / spectrum
     return (
         (0.9795) / ((1 + ((18.77617 / x_um) ** -6.94246)) ** 91.98745)
         + -0.06
@@ -181,7 +175,7 @@ def __InSb(spectrum):
                 The y-values associated with an InSb detector
     """
 
-    x_um = spectrum / 1000
+    x_um = 10000 / spectrum
     return 1.97163e11 * (1 / (1 + np.exp(-(x_um - 5.3939) / 1.6624))) * (
         1 - 1 / (1 + np.exp(-(x_um - 5.3939) / 0.11925))
     ) + (3.3e10) / (2.44977 * np.sqrt(np.pi / (4 * np.log(2)))) * np.exp(
@@ -200,7 +194,7 @@ def __MCT(spectrum):
                 The y-values associated with a MCT detector
     """
 
-    x_um = spectrum / 1000
+    x_um = 10000 / spectrum
     return (
         (1.98748 * (10**9))
         + (2.10252 * (10**10))
@@ -413,7 +407,7 @@ def __process_spectrum(params, raw_spectrum):
     # returns the x-values of calc_spectrum() in an array
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get_wavenumber
     w = raw_spectrum.get_wavenumber()
-
+    
     # processing for blackbody spectrum (sPlanck)
     spec_sPlanck = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __sPlanck(w, params["source"])},
@@ -515,46 +509,42 @@ def __process_spectrum(params, raw_spectrum):
 
     # spectrum.normalize(normalize_how="mean", inplace=True, force=True)
 
-
-    # Calc the diff, not hard numbers
-    # store the sections in a list <-- list comprehension!!!
-    # pass through multiscan
-    # loop over the array, tacking sections onto a main spectrum in order
-
     # Crop spectrum into two halves inorder to minimize memory space in multiscan
     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
-    try:
+    # NOTE: this section causes issues with the new Planck function
+    # try:
 
-        num_segments = 16
+    #     num_segments = 16
 
-        split = (params["waveMin"] + params["waveMax"]) / num_segments
-        spectra_segments = []          # Create a list of size 6, default value of None
+    #     split = (params["waveMin"] + params["waveMax"]) / num_segments
+    #     spectra_segments = []          # Create a list of size 6, default value of None
 
-        # Range for the first segment
-        min_index = params["waveMin"]
-        max_index = params["waveMin"] + split
+    #     # Range for the first segment
+    #     min_index = params["waveMin"]
+    #     max_index = params["waveMin"] + split
 
-        # Split and add noise; store in list
-        for _ in range(num_segments):
-            segment = crop(spectrum, min_index, max_index, 'cm-1', inplace=False)
-            segment = __multiscan(segment, params["scan"])
-            gc.collect()
-            spectra_segments.append(segment)
-            min_index = max_index
-            max_index += split
+    #     # Split and add noise; store in list
+    #     for _ in range(num_segments):
+    #         segment = crop(spectrum, min_index, max_index, 'cm-1', inplace=False)
+    #         segment = __multiscan(segment, params["scan"])
+    #         gc.collect()
+    #         spectra_segments.append(segment)
+    #         min_index = max_index
+    #         max_index += split
 
-        [print(segment) for segment in spectra_segments]     
-        # stitch the spectra back together once noise has been added
-        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
-        noisey_spectrum = spectra_segments[0]
+    #     # [print(segment) for segment in spectra_segments]     
+    #     # stitch the spectra back together once noise has been added
+    #     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
+    #     noisey_spectrum = spectra_segments[0]
 
-        for segment in spectra_segments:
-            if len(segment.get_wavenumber()) != 0 and segment is not noisey_spectrum:
-                noisey_spectrum = concat_spectra(noisey_spectrum, segment)
+    #     for segment in spectra_segments:
+    #         if len(segment.get_wavenumber()) != 0 and segment is not noisey_spectrum:
+    #             noisey_spectrum = concat_spectra(noisey_spectrum, segment)
 
-        spectrum = noisey_spectrum
-    except:
-        return None
+    #     spectrum = noisey_spectrum
+    # except:
+    #     return None
+
     # return processed spectrum
     return spectrum
 
