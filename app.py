@@ -66,7 +66,7 @@ def background():
     try:
         # put incoming JSON into a dictionary
         data = json.loads(request.data)
-    
+
         # verify user input is valid
         if not __param_check(data):
             return {
@@ -92,39 +92,25 @@ def background():
                 "success": False,
                 "text": "Background Failure"
             }
-    
+
         # perform:
         #   --> blackbody spectrum of source (sPlanck)
         #   --> transmission spectrum of beamsplitter and cell windows
         #   --> detector response spectrum
-        processed_spectrum = __process_spectrum(data, background_spectrum, True)
-    
+        processed_spectrum = __process_spectrum(data, background_spectrum)
+
         if processed_spectrum is None:
             return {
                 "success": False,
                 "text": "Issue Processing Data"
             }
-    
         # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
         x_value, y_value = processed_spectrum.get("transmittance_noslit")
-    
         # convert dictionary values to strings and return as JSON
         return {
             "success": True,
             "x": list(x_value),
             "y": list(map(str, y_value)),
-        }
-
-    # perform:
-    #   --> blackbody spectrum of source (sPlanck)
-    #   --> transmission spectrum of beamsplitter and cell windows
-    #   --> detector response spectrum
-    processed_spectrum = __process_spectrum(data, background_spectrum)
-
-    if processed_spectrum is None:
-        return {
-            "success": False,
-            "text": "Issue Processing Data"
         }
       
     except:
