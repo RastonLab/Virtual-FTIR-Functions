@@ -1,5 +1,5 @@
 import radis
-from radis import SerialSlabs, Spectrum, calc_spectrum
+from radis import SerialSlabs, Spectrum, calc_spectrum, MergeSlabs
 from specutils.fitting import find_lines_threshold
 
 from functions import __sPlanck, __CaF2, __ZnSe, __sapphire, __AR_ZnSe, __AR_CaF2, __InSb, __MCT, __zeroY, __calc_wstep, __multiscan
@@ -100,6 +100,7 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="MCT",
     )
+    spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
 
     # processing for indium antimonide (InSb) detector
     spec_InSb = Spectrum(
@@ -108,6 +109,7 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="InSb",
     )
+    spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
 
     # list of spectra to multiply
     slabs = []
@@ -137,19 +139,15 @@ def __process_spectrum(params, raw_spectrum):
     match params["detector"]:
         case "MCT":
             spec_MCT = __multiscan(spec_MCT, params["scan"])
-            spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
-
             slabs.extend([spec_ZnSe, spec_MCT])
         case "InSb":
             spec_InSb = __multiscan(spec_InSb, params["scan"])
-            spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
-
             slabs.extend([spec_sapphire, spec_InSb])
 
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
-    
+
     # return processed spectrum
     return spectrum
 
