@@ -1,5 +1,6 @@
 import numpy as np
 from radis.spectrum.operations import add_array
+from radis import Spectrum
 
 # -------------------------------------
 # ------------- blackbody -------------
@@ -204,7 +205,7 @@ def __MCT(spectrum):
 # -------------------------------------
 # ---------- helper functions ----------
 # ------------------------------------
-def __zeroY(spectrum):
+def zeroY(spectrum):
     """
     Calculates the y-values (y = 1) for background samples.
 
@@ -217,7 +218,7 @@ def __zeroY(spectrum):
     return (spectrum * 0) + 1
 
 
-def __param_check(params):
+def param_check(params):
     """
     Parses user provided parameters for validity.
 
@@ -258,7 +259,7 @@ def __param_check(params):
     return True
 
 
-def __calc_wstep(resolution, zero_fill):
+def calc_wstep(resolution, zero_fill):
     """
     Calculates the appropriate wstep for a spectrum based on the given resolution and zero fill.
 
@@ -337,7 +338,7 @@ def __calc_wstep(resolution, zero_fill):
 
     return wstep
 
-def __multiscan(spectrum, num_scans):
+def multiscan(spectrum, num_scans):
     # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     
@@ -367,3 +368,80 @@ def __multiscan(spectrum, num_scans):
         ) 
 
     return spectrum
+
+def get_component_spectra(w, source_temp):
+    # processing for blackbody spectrum (sPlanck)
+    spec_sPlanck = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __sPlanck(w, source_temp)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="sPlanck",
+    )
+    spec_sPlanck.normalize(normalize_how="mean", inplace=True, force=True)
+
+    # processing for anti-reflective zinc selenide (AR_ZnSe) beamsplitter
+    spec_AR_ZnSe = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __AR_ZnSe(w)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="AR_ZnSe",
+    )
+    spec_AR_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
+
+    # processing for anti-reflective calcium fluoride (AR_CaF2) beamsplitter
+    spec_AR_CaF2 = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __AR_CaF2(w)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="AR_CaF2",
+    )
+    spec_AR_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
+
+    # processing for calcium fluoride (CaF2) cell window
+    spec_CaF2 = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __CaF2(w)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="CaF2",
+    )
+    spec_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
+
+
+    # processing for zinc selenide (ZnSe) cell window
+    spec_ZnSe = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __ZnSe(w)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="ZnSe",
+    )
+    spec_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
+
+
+    # processing for sapphire window before detector
+    spec_sapphire = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __sapphire(w)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="sapphire",
+    )
+    spec_sapphire.normalize(normalize_how="mean", inplace=True, force=True)
+
+    # processing for Mercury-Cadmium-Telluride (MCT) detector
+    spec_MCT = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __MCT(w)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="MCT",
+    )
+    # spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
+
+    # processing for indium antimonide (InSb) detector
+    spec_InSb = Spectrum(
+        {"wavenumber": w, "transmittance_noslit": __InSb(w)},
+        wunit="cm",
+        units={"transmittance_noslit": ""},
+        name="InSb",
+    )
+    # spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
+    return (spec_sPlanck, spec_AR_ZnSe, spec_AR_CaF2, spec_CaF2, spec_ZnSe, 
+            spec_sapphire, spec_MCT, spec_InSb)

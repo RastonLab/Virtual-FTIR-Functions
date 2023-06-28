@@ -1,12 +1,11 @@
 import radis
 from radis import SerialSlabs, Spectrum, calc_spectrum, MergeSlabs
 from specutils.fitting import find_lines_threshold
-
-from functions import __sPlanck, __CaF2, __ZnSe, __sapphire, __AR_ZnSe, __AR_CaF2, __InSb, __MCT, __zeroY, __calc_wstep, __multiscan
+from functions import zeroY, calc_wstep, multiscan, get_component_spectra
 # ------------------------------
 # ----- Spectrum Processing -----
 # ------------------------------
-def __process_spectrum(params, raw_spectrum):
+def process_spectrum(params, raw_spectrum):
     """
     The following function takes a 'raw spectrum' generated using Radis's
     'calc_spectrum()' function and performing custom equations that virtualize
@@ -37,79 +36,8 @@ def __process_spectrum(params, raw_spectrum):
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get_wavenumber
     w = raw_spectrum.get_wavenumber()
 
-    # processing for blackbody spectrum (sPlanck)
-    spec_sPlanck = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __sPlanck(w, params["source"])},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="sPlanck",
-    )
-    spec_sPlanck.normalize(normalize_how="mean", inplace=True, force=True)
-
-    # processing for anti-reflective zinc selenide (AR_ZnSe) beamsplitter
-    spec_AR_ZnSe = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __AR_ZnSe(w)},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="AR_ZnSe",
-    )
-    spec_AR_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
-
-    # processing for anti-reflective calcium fluoride (AR_CaF2) beamsplitter
-    spec_AR_CaF2 = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __AR_CaF2(w)},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="AR_CaF2",
-    )
-    spec_AR_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
-
-    # processing for calcium fluoride (CaF2) cell window
-    spec_CaF2 = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __CaF2(w)},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="CaF2",
-    )
-    spec_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
-
-
-    # processing for zinc selenide (ZnSe) cell window
-    spec_ZnSe = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __ZnSe(w)},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="ZnSe",
-    )
-    spec_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
-
-
-    # processing for sapphire window before detector
-    spec_sapphire = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __sapphire(w)},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="sapphire",
-    )
-    spec_sapphire.normalize(normalize_how="mean", inplace=True, force=True)
-
-    # processing for Mercury-Cadmium-Telluride (MCT) detector
-    spec_MCT = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __MCT(w)},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="MCT",
-    )
-    # spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
-
-    # processing for indium antimonide (InSb) detector
-    spec_InSb = Spectrum(
-        {"wavenumber": w, "transmittance_noslit": __InSb(w)},
-        wunit="cm",
-        units={"transmittance_noslit": ""},
-        name="InSb",
-    )
-    # spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_sPlanck, spec_AR_ZnSe, spec_AR_CaF2, spec_CaF2, spec_ZnSe, spec_sapphire, \
+        spec_MCT, spec_InSb = get_component_spectra(w, params["source"])
 
     # list of spectra to multiply
     slabs = []
@@ -138,11 +66,11 @@ def __process_spectrum(params, raw_spectrum):
     # ----- d.) detector response spectrum -----
     match params["detector"]:
         case "MCT":
-            spec_MCT = __multiscan(spec_MCT, params["scan"])
+            spec_MCT = multiscan(spec_MCT, params["scan"])
             spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
             slabs.extend([spec_ZnSe, spec_MCT])
         case "InSb":
-            spec_InSb = __multiscan(spec_InSb, params["scan"])
+            spec_InSb = multiscan(spec_InSb, params["scan"])
             spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
             slabs.extend([spec_sapphire, spec_InSb])
 
@@ -154,7 +82,7 @@ def __process_spectrum(params, raw_spectrum):
     return spectrum
 
 
-def __process_background(raw_spectrum):
+def process_background(raw_spectrum):
     """
     Accepts a spectrum generated using '__generate_spectrum()'.
     A background by default has all y-values of one.
@@ -169,7 +97,7 @@ def __process_background(raw_spectrum):
     spec_zeroY = Spectrum(
         {
             "wavenumber": raw_spectrum.get_wavenumber(),
-            "transmittance_noslit": __zeroY(raw_spectrum.get_wavenumber()),
+            "transmittance_noslit": zeroY(raw_spectrum.get_wavenumber()),
         },
         wunit="cm",
         units={"transmittance_noslit": ""},
@@ -179,7 +107,7 @@ def __process_background(raw_spectrum):
     return spec_zeroY
 
 
-def __generate_spectrum(params):
+def generate_spectrum(params):
     """
     Generates a spectrum using Radis's 'calc_spectrum()' function based
     on user parameters. That spectrum is then processed by
@@ -196,7 +124,7 @@ def __generate_spectrum(params):
 
     # resolution of wavenumber grid (cm^-1)
     #   https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum:~:text=wstep%20(float%20(,%27auto%27)
-    wstep = __calc_wstep(params["resolution"], params["zeroFill"])
+    wstep = calc_wstep(params["resolution"], params["zeroFill"])
 
     try:
         # ----- a.) transmission spectrum of gas sample -----
@@ -233,7 +161,7 @@ def __generate_spectrum(params):
     return spectrum, False, None
 
 
-def __find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
+def find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
     try:
         spectrum = Spectrum.from_array(
             x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
