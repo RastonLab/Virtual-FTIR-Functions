@@ -518,7 +518,7 @@ def __process_spectrum(params, raw_spectrum):
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
-    
+
     # return processed spectrum
     return spectrum
 
