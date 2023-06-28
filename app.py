@@ -6,13 +6,13 @@ import json
 
 from flask import Flask, request
 from flask_cors import CORS
-from functions import (
+from processing import (
     __generate_spectrum,
-    __param_check,
     __process_background,
     __process_spectrum,
     __find_peaks,
 )
+from functions import __param_check
 
 app = Flask(__name__)
 CORS(app)
