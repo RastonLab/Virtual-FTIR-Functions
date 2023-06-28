@@ -1,11 +1,8 @@
-import astropy.units as u
 import numpy as np
 import radis
 from radis import SerialSlabs, Spectrum, calc_spectrum
-from radis.spectrum.operations import add_array, multiply, concat_spectra, crop
-from specutils import SpectralRegion
-from specutils.fitting import find_lines_derivative, find_lines_threshold
-from specutils.manipulation import noise_region_uncertainty
+from radis.spectrum.operations import add_array
+from specutils.fitting import find_lines_threshold
 
 # -------------------------------------
 # ------------- blackbody -------------
@@ -21,11 +18,12 @@ def __sPlanck(spectrum, source_temp):
             Returns:
                 The y-values of a Blackbody spectrum
     """
-    k_cgs = 1.380649e-16
-    h_cgs = 6.62607015e-27
-    c_cgs = 2.99792458e10
+
+    H = 6.62606957e-34
+    C = 2.99792458e8
+    K_B = 1.3806488e-23
     
-    return (2 * h_cgs * c_cgs ** 2 * spectrum ** 3) * (1 / (np.exp(h_cgs * c_cgs * spectrum / (k_cgs * source_temp)) - 1))
+    return (0.2 * H * (C**2)) / ((1 / (spectrum * (10**2))) ** 5) * (1 / (np.exp((H * C) / ((1 / (spectrum * (10**2))) * K_B * source_temp)) - 1))
 
 
 # --------------------------------------
@@ -407,7 +405,7 @@ def __process_spectrum(params, raw_spectrum):
     # returns the x-values of calc_spectrum() in an array
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get_wavenumber
     w = raw_spectrum.get_wavenumber()
-    
+
     # processing for blackbody spectrum (sPlanck)
     spec_sPlanck = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __sPlanck(w, params["source"])},
@@ -415,6 +413,7 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="sPlanck",
     )
+    spec_sPlanck.normalize(normalize_how="mean", inplace=True, force=True)
 
     # processing for anti-reflective zinc selenide (AR_ZnSe) beamsplitter
     spec_AR_ZnSe = Spectrum(
@@ -423,6 +422,7 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="AR_ZnSe",
     )
+    spec_AR_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
 
     # processing for anti-reflective calcium fluoride (AR_CaF2) beamsplitter
     spec_AR_CaF2 = Spectrum(
@@ -431,6 +431,7 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="AR_CaF2",
     )
+    spec_AR_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
 
     # processing for calcium fluoride (CaF2) cell window
     spec_CaF2 = Spectrum(
@@ -439,6 +440,8 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="CaF2",
     )
+    spec_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
+
 
     # processing for zinc selenide (ZnSe) cell window
     spec_ZnSe = Spectrum(
@@ -447,6 +450,8 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="ZnSe",
     )
+    spec_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
+
 
     # processing for sapphire window before detector
     spec_sapphire = Spectrum(
@@ -455,6 +460,7 @@ def __process_spectrum(params, raw_spectrum):
         units={"transmittance_noslit": ""},
         name="sapphire",
     )
+    spec_sapphire.normalize(normalize_how="mean", inplace=True, force=True)
 
     # processing for Mercury-Cadmium-Telluride (MCT) detector
     spec_MCT = Spectrum(
@@ -499,52 +505,20 @@ def __process_spectrum(params, raw_spectrum):
     # ----- d.) detector response spectrum -----
     match params["detector"]:
         case "MCT":
+            spec_MCT = __multiscan(spec_MCT, params["scan"])
+            spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
+
             slabs.extend([spec_ZnSe, spec_MCT])
         case "InSb":
+            spec_InSb = __multiscan(spec_InSb, params["scan"])
+            spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
+
             slabs.extend([spec_sapphire, spec_InSb])
 
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
 
-    # spectrum.normalize(normalize_how="mean", inplace=True, force=True)
-
-    # Crop spectrum into two halves inorder to minimize memory space in multiscan
-    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.crop
-    # NOTE: this section causes issues with the new Planck function
-    # try:
-
-    #     num_segments = 16
-
-    #     split = (params["waveMin"] + params["waveMax"]) / num_segments
-    #     spectra_segments = []          # Create a list of size 6, default value of None
-
-    #     # Range for the first segment
-    #     min_index = params["waveMin"]
-    #     max_index = params["waveMin"] + split
-
-    #     # Split and add noise; store in list
-    #     for _ in range(num_segments):
-    #         segment = crop(spectrum, min_index, max_index, 'cm-1', inplace=False)
-    #         segment = __multiscan(segment, params["scan"])
-    #         gc.collect()
-    #         spectra_segments.append(segment)
-    #         min_index = max_index
-    #         max_index += split
-
-    #     # [print(segment) for segment in spectra_segments]     
-    #     # stitch the spectra back together once noise has been added
-    #     # https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.concat_spectra
-    #     noisey_spectrum = spectra_segments[0]
-
-    #     for segment in spectra_segments:
-    #         if len(segment.get_wavenumber()) != 0 and segment is not noisey_spectrum:
-    #             noisey_spectrum = concat_spectra(noisey_spectrum, segment)
-
-    #     spectrum = noisey_spectrum
-    # except:
-    #     return None
-    spectrum = __multiscan(spectrum, params["scan"])
     # return processed spectrum
     return spectrum
 
