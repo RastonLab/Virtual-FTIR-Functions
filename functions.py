@@ -349,10 +349,13 @@ def multiscan(spectrum, num_scans):
     # how many maximized iterations
     groups = num_scans // scans_per_group
 
+    low = 0
+    high = 0.05
+
     for _ in range(groups):
         spectrum = add_array(
             spectrum,
-            sum(np.random.normal(0, 800000000, (scans_per_group, len(w)))) / num_scans,
+            sum(np.random.uniform(low, high, (scans_per_group, len(w)))) / num_scans,
             var="transmittance_noslit",
         )
     
@@ -363,7 +366,7 @@ def multiscan(spectrum, num_scans):
         diff = num_scans - (scans_per_group * groups)
         spectrum = add_array(
             spectrum,
-            sum(np.random.normal(0, 800000000, (diff, len(w)))) / num_scans,
+            sum(np.random.uniform(low, high, (diff, len(w)))) / num_scans,
             var="transmittance_noslit",
         ) 
 
@@ -433,7 +436,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="MCT",
     )
-    # spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
 
     # processing for indium antimonide (InSb) detector
     spec_InSb = Spectrum(
@@ -442,6 +445,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="InSb",
     )
-    # spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
+    
     return (spec_sPlanck, spec_AR_ZnSe, spec_AR_CaF2, spec_CaF2, spec_ZnSe, 
             spec_sapphire, spec_MCT, spec_InSb)

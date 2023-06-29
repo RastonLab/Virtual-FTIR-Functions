@@ -10,7 +10,7 @@ from processing import (
     generate_spectrum,
     process_background,
     process_spectrum,
-    find_peaks,
+    find_peaks
 )
 from functions import param_check
 
@@ -73,7 +73,7 @@ def background():
                 "success": False,
                 "text": "Parameter check failed",
             }
-    
+
         # perform:
         #   --> transmission spectrum of gas sample (calc_spectrum)
         spectrum, error, message = generate_spectrum(data)
@@ -82,7 +82,7 @@ def background():
                 "success": False,
                 "text": message,
             }
-    
+
         # perform:
         #   --> set all y-values to one
         try:
@@ -121,7 +121,7 @@ def background():
 
 
 @app.route("/find_peaks", methods=["POST"])
-def find_peaks():
+def handle_peaks():
     data = json.loads(request.data)
 
     peaks = find_peaks(
