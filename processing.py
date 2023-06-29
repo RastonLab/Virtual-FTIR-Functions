@@ -67,11 +67,9 @@ def process_spectrum(params, raw_spectrum):
     match params["detector"]:
         case "MCT":
             spec_MCT = multiscan(spec_MCT, params["scan"])
-            spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
             slabs.extend([spec_ZnSe, spec_MCT])
         case "InSb":
             spec_InSb = multiscan(spec_InSb, params["scan"])
-            spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
             slabs.extend([spec_sapphire, spec_InSb])
 
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
