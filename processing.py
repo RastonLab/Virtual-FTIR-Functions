@@ -66,15 +66,16 @@ def process_spectrum(params, raw_spectrum):
     # ----- d.) detector response spectrum -----
     match params["detector"]:
         case "MCT":
-            spec_MCT = multiscan(spec_MCT, params["scan"])
+            # spec_MCT = multiscan(spec_MCT, params["scan"])
             slabs.extend([spec_ZnSe, spec_MCT])
         case "InSb":
-            spec_InSb = multiscan(spec_InSb, params["scan"])
+            # spec_InSb = multiscan(spec_InSb, params["scan"])
             slabs.extend([spec_sapphire, spec_InSb])
 
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
+    spectrum = multiscan(spectrum, params["scan"])
 
     # return processed spectrum
     return spectrum
