@@ -341,7 +341,6 @@ def calc_wstep(resolution, zero_fill):
 def multiscan(spectrum, num_scans):
     # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
-    
     w = spectrum.get_wavenumber()
 
     # the maximum scans done per iteration
