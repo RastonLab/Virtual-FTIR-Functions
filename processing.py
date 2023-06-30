@@ -79,7 +79,7 @@ def process_spectrum(params, raw_spectrum):
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
-    # spectrum = multiscan(spectrum, params["scan"])
+    spectrum = multiscan(spectrum, params["scan"])
     spectrum.crop(params["waveMin"], params["waveMax"], inplace=True)
     # return processed spectrum
     return spectrum
