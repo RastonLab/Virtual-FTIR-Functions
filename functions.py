@@ -338,6 +338,8 @@ def calc_wstep(resolution, zero_fill):
 
     return wstep
 
+import math
+
 def multiscan(spectrum, num_scans):
     # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
@@ -384,7 +386,7 @@ def get_component_spectra(w, source_temp):
     # processing for anti-reflective zinc selenide (AR_ZnSe) beamsplitter
     spec_AR_ZnSe = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __AR_ZnSe(w)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="AR_ZnSe",
     )
@@ -393,7 +395,7 @@ def get_component_spectra(w, source_temp):
     # processing for anti-reflective calcium fluoride (AR_CaF2) beamsplitter
     spec_AR_CaF2 = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __AR_CaF2(w)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="AR_CaF2",
     )
@@ -402,7 +404,7 @@ def get_component_spectra(w, source_temp):
     # processing for calcium fluoride (CaF2) cell window
     spec_CaF2 = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __CaF2(w)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="CaF2",
     )
@@ -412,7 +414,7 @@ def get_component_spectra(w, source_temp):
     # processing for zinc selenide (ZnSe) cell window
     spec_ZnSe = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __ZnSe(w)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="ZnSe",
     )
@@ -422,7 +424,7 @@ def get_component_spectra(w, source_temp):
     # processing for sapphire window before detector
     spec_sapphire = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __sapphire(w)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="sapphire",
     )
@@ -431,7 +433,7 @@ def get_component_spectra(w, source_temp):
     # processing for Mercury-Cadmium-Telluride (MCT) detector
     spec_MCT = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __MCT(w)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="MCT",
     )
@@ -440,7 +442,7 @@ def get_component_spectra(w, source_temp):
     # processing for indium antimonide (InSb) detector
     spec_InSb = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __InSb(w)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="InSb",
     )
