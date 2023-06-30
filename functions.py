@@ -349,12 +349,12 @@ def multiscan(spectrum, num_scans):
     groups = num_scans // scans_per_group
 
     low = 0
-    high = 0.05
+    high = 0.005
 
     for _ in range(groups):
         spectrum = add_array(
             spectrum,
-            sum(np.random.uniform(low, high, (scans_per_group, len(w)))) / num_scans,
+            sum(np.random.normal(low, high, (scans_per_group, len(w)))) / num_scans,
             var="transmittance_noslit",
         )
     
@@ -365,7 +365,7 @@ def multiscan(spectrum, num_scans):
         diff = num_scans - (scans_per_group * groups)
         spectrum = add_array(
             spectrum,
-            sum(np.random.uniform(low, high, (diff, len(w)))) / num_scans,
+            sum(np.random.normal(low, high, (diff, len(w)))) / num_scans,
             var="transmittance_noslit",
         ) 
 
