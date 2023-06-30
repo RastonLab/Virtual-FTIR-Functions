@@ -75,7 +75,7 @@ def process_spectrum(params, raw_spectrum):
     # SerialSlabs() multiplies the transmittance values (y-values) of the selected spectra
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
-    spectrum = multiscan(spectrum, params["scan"])
+    # spectrum = multiscan(spectrum, params["scan"])
 
     # return processed spectrum
     return spectrum
@@ -98,7 +98,7 @@ def process_background(raw_spectrum):
             "wavenumber": raw_spectrum.get_wavenumber(),
             "transmittance_noslit": zeroY(raw_spectrum.get_wavenumber()),
         },
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="Background",
     )
