@@ -2,6 +2,10 @@ import radis
 from radis import SerialSlabs, Spectrum, calc_spectrum, MergeSlabs
 from specutils.fitting import find_lines_threshold
 from functions import zeroY, calc_wstep, multiscan, get_component_spectra
+
+WAVEMIN = 400
+WAVEMAX = 12500
+
 # ------------------------------
 # ----- Spectrum Processing -----
 # ------------------------------
@@ -34,10 +38,10 @@ def process_spectrum(params, raw_spectrum):
 
     # returns the x-values of calc_spectrum() in an array
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get_wavenumber
-    w = raw_spectrum.get_wavenumber()
+    wave_number = raw_spectrum.get_wavenumber()
 
     spec_sPlanck, spec_AR_ZnSe, spec_AR_CaF2, spec_CaF2, spec_ZnSe, spec_sapphire, \
-        spec_MCT, spec_InSb = get_component_spectra(w, params["source"])
+        spec_MCT, spec_InSb = get_component_spectra(wave_number, params["source"])
 
     # list of spectra to multiply
     slabs = []
@@ -76,7 +80,7 @@ def process_spectrum(params, raw_spectrum):
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
     # spectrum = multiscan(spectrum, params["scan"])
-
+    spectrum.crop(params["waveMin"], params["waveMax"], inplace=True)
     # return processed spectrum
     return spectrum
 
@@ -129,8 +133,8 @@ def generate_spectrum(params):
         # ----- a.) transmission spectrum of gas sample -----
         #   https://radis.readthedocs.io/en/latest/source/radis.lbl.calc.html#radis.lbl.calc.calc_spectrum
         spectrum = calc_spectrum(
-            params["waveMin"],
-            params["waveMax"],
+            WAVEMIN,
+            WAVEMAX,
             molecule=params["molecule"],
             isotope="1,2,3",
             pressure=params["pressure"],
