@@ -381,7 +381,6 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="sPlanck",
     )
-    spec_sPlanck.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for anti-reflective zinc selenide (AR_ZnSe) beamsplitter
     spec_AR_ZnSe = Spectrum(
@@ -390,7 +389,6 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="AR_ZnSe",
     )
-    spec_AR_ZnSe.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for anti-reflective calcium fluoride (AR_CaF2) beamsplitter
     spec_AR_CaF2 = Spectrum(
@@ -399,7 +397,6 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="AR_CaF2",
     )
-    spec_AR_CaF2.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for calcium fluoride (CaF2) cell window
     spec_CaF2 = Spectrum(
@@ -408,7 +405,6 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="CaF2",
     )
-    spec_CaF2.normalize(normalize_how="max", inplace=True, force=True)
 
 
     # processing for zinc selenide (ZnSe) cell window
@@ -418,7 +414,6 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="ZnSe",
     )
-    spec_ZnSe.normalize(normalize_how="max", inplace=True, force=True)
 
 
     # processing for sapphire window before detector
@@ -428,7 +423,6 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="sapphire",
     )
-    spec_sapphire.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for Mercury-Cadmium-Telluride (MCT) detector
     spec_MCT = Spectrum(
