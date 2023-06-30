@@ -377,11 +377,11 @@ def get_component_spectra(w, source_temp):
     # processing for blackbody spectrum (sPlanck)
     spec_sPlanck = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __sPlanck(w, source_temp)},
-        wunit="cm",
+        wunit="cm-1",
         units={"transmittance_noslit": ""},
         name="sPlanck",
     )
-    spec_sPlanck.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_sPlanck.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for anti-reflective zinc selenide (AR_ZnSe) beamsplitter
     spec_AR_ZnSe = Spectrum(
@@ -390,7 +390,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="AR_ZnSe",
     )
-    spec_AR_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_AR_ZnSe.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for anti-reflective calcium fluoride (AR_CaF2) beamsplitter
     spec_AR_CaF2 = Spectrum(
@@ -399,7 +399,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="AR_CaF2",
     )
-    spec_AR_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_AR_CaF2.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for calcium fluoride (CaF2) cell window
     spec_CaF2 = Spectrum(
@@ -408,7 +408,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="CaF2",
     )
-    spec_CaF2.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_CaF2.normalize(normalize_how="max", inplace=True, force=True)
 
 
     # processing for zinc selenide (ZnSe) cell window
@@ -418,7 +418,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="ZnSe",
     )
-    spec_ZnSe.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_ZnSe.normalize(normalize_how="max", inplace=True, force=True)
 
 
     # processing for sapphire window before detector
@@ -428,7 +428,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="sapphire",
     )
-    spec_sapphire.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_sapphire.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for Mercury-Cadmium-Telluride (MCT) detector
     spec_MCT = Spectrum(
@@ -437,7 +437,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="MCT",
     )
-    spec_MCT.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_MCT.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for indium antimonide (InSb) detector
     spec_InSb = Spectrum(
@@ -446,7 +446,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="InSb",
     )
-    spec_InSb.normalize(normalize_how="mean", inplace=True, force=True)
+    spec_InSb.normalize(normalize_how="max", inplace=True, force=True)
     
     return (spec_sPlanck, spec_AR_ZnSe, spec_AR_CaF2, spec_CaF2, spec_ZnSe, 
             spec_sapphire, spec_MCT, spec_InSb)
