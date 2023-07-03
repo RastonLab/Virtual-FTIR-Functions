@@ -430,7 +430,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="MCT",
     )
-    # spec_MCT.normalize(normalize_how="max", inplace=True, force=True)
+    spec_MCT.normalize(normalize_how="max", inplace=True, force=True)
 
     # processing for indium antimonide (InSb) detector
     spec_InSb = Spectrum(
@@ -439,7 +439,7 @@ def get_component_spectra(w, source_temp):
         units={"transmittance_noslit": ""},
         name="InSb",
     )
-    # spec_InSb.normalize(normalize_how="max", inplace=True, force=True)
+    spec_InSb.normalize(normalize_how="max", inplace=True, force=True)
 
     # _, y_value = spec_InSb.get("transmittance_noslit")
     # y_value *= 2
