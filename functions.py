@@ -442,7 +442,7 @@ def get_component_spectra(w, source_temp):
     spec_InSb.normalize(normalize_how="max", inplace=True, force=True)
 
     _, y_value = spec_InSb.get("transmittance_noslit")
-    y_value *= 2
+    y_value *= np.pi
 
     spec_InSb = Spectrum(
         {"wavenumber": w, "transmittance_noslit": y_value},
