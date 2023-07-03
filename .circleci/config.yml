@@ -16,11 +16,11 @@ jobs:
           docker-username: CIRCLE_PROJECT_USERNAME
           registry: ghcr.io
       - docker/build:
-          image: $USER/$REPO_NAME
+          image: $USER/$REPO_NAME:latest
           registry: ghcr.io
       - docker/push:
           digest-path: /tmp/digest.txt
-          image: $USER/$REPO_NAME
+          image: $USER/$REPO_NAME:latest
           registry: ghcr.io
       - run:
           command: |
