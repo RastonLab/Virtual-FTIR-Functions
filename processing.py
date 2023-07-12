@@ -9,7 +9,8 @@ WAVEMAX = 12500
 # ------------------------------
 # ----- Spectrum Processing -----
 # ------------------------------
-def process_spectrum(params, raw_spectrum):
+def process_spectrum(params: dict[str, str, str, float, str, float, float, int, 
+                                  int, int, int, str, int], raw_spectrum: Spectrum) -> Spectrum:
     """
     The following function takes a 'raw spectrum' generated using Radis's
     'calc_spectrum()' function and performing custom equations that virtualize
@@ -85,7 +86,7 @@ def process_spectrum(params, raw_spectrum):
     return spectrum
 
 
-def process_background(raw_spectrum):
+def process_background(raw_spectrum: Spectrum) -> Spectrum:
     """
     Accepts a spectrum generated using '__generate_spectrum()'.
     A background by default has all y-values of one.
@@ -110,7 +111,8 @@ def process_background(raw_spectrum):
     return spec_zeroY
 
 
-def generate_spectrum(params):
+def generate_spectrum(params: dict[str, str, str, float, str, float, 
+                     float, int, int, int, int, str, int]) -> tuple[Spectrum, bool, str]:
     """
     Generates a spectrum using Radis's 'calc_spectrum()' function based
     on user parameters. That spectrum is then processed by
@@ -161,10 +163,11 @@ def generate_spectrum(params):
             case other:
                 return None, True, str(e)
 
-    return spectrum, False, None
+    return (spectrum, False, None)
 
 
-def find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
+def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float, 
+               upperbound: float, threshold: float = 0) -> dict[float, float]:
     try:
         spectrum = Spectrum.from_array(
             x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
@@ -174,6 +177,7 @@ def find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
         )
         lines = find_lines_threshold(new_spec, noise_factor=1)
     except:
+        # TODO Add error message???
         return None
 
     peaks = {}

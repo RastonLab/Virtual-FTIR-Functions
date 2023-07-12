@@ -19,12 +19,12 @@ CORS(app)
 
 
 @app.route("/", methods=["GET"])
-def ftir():
+def ftir() -> str:
     return "<h1 style='color:blue'>Raston Lab FTIR API</h1>"
 
 
 @app.route("/spectrum", methods=["POST"])
-def spectrum():
+def spectrum() -> dict[bool, list[float], list[float]]:
     # put incoming JSON into a dictionary
     params = json.loads(request.data)
 
@@ -62,66 +62,66 @@ def spectrum():
 
 
 @app.route("/background", methods=["POST"])
-def background():
-    try:
-        # put incoming JSON into a dictionary
-        data = json.loads(request.data)
+def background() -> dict[bool, list[float], list[float]]:
+    # try:
+    # put incoming JSON into a dictionary
+    data = json.loads(request.data)
 
-        # verify user input is valid
-        if not param_check(data):
-            return {
-                "success": False,
-                "text": "Parameter check failed",
-            }
-
-        # perform:
-        #   --> transmission spectrum of gas sample (calc_spectrum)
-        spectrum, error, message = generate_spectrum(data)
-        if error:
-            return {
-                "success": False,
-                "text": message,
-            }
-
-        # perform:
-        #   --> set all y-values to one
-        try:
-            background_spectrum = process_background(spectrum)
-        except:
-            return {
-                "success": False,
-                "text": "Background Failure"
-            }
-
-        # perform:
-        #   --> blackbody spectrum of source (sPlanck)
-        #   --> transmission spectrum of beamsplitter and cell windows
-        #   --> detector response spectrum
-        processed_spectrum = process_spectrum(data, background_spectrum)
-        
-        if processed_spectrum is None:
-            return {
-                "success": False,
-                "text": "Issue Processing Data"
-            }
-        # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
-        x_value, y_value = processed_spectrum.get("transmittance_noslit")
-        # convert dictionary values to strings and return as JSON
+    # verify user input is valid
+    if not param_check(data):
         return {
-            "success": True,
-            "x": list(x_value),
-            "y": list(map(str, y_value)),
-        }
-      
-    except:
-       return {
             "success": False,
-            "text": "Issue Executing Scanning Procedures"
-        } 
+            "text": "Parameter check failed",
+        }
+
+    # perform:
+    #   --> transmission spectrum of gas sample (calc_spectrum)
+    spectrum, error, message = generate_spectrum(data)
+    if error:
+        return {
+            "success": False,
+            "text": message,
+        }
+
+    # perform:
+    #   --> set all y-values to one
+    try:
+        background_spectrum = process_background(spectrum)
+    except:
+        return {
+            "success": False,
+            "text": "Background Failure"
+        }
+
+    # perform:
+    #   --> blackbody spectrum of source (sPlanck)
+    #   --> transmission spectrum of beamsplitter and cell windows
+    #   --> detector response spectrum
+    processed_spectrum = process_spectrum(data, background_spectrum)
+    
+    if processed_spectrum is None:
+        return {
+            "success": False,
+            "text": "Issue Processing Data"
+        }
+    # https://radis.readthedocs.io/en/latest/source/radis.spectrum.spectrum.html#radis.spectrum.spectrum.Spectrum.get
+    x_value, y_value = processed_spectrum.get("transmittance_noslit")
+    # convert dictionary values to strings and return as JSON
+    return {
+        "success": True,
+        "x": list(x_value),
+        "y": list(map(str, y_value)),
+    }
+      
+    # except:
+    #    return {
+    #         "success": False,
+    #         "text": "Issue Executing Scanning Procedures"
+    #     } 
 
 
 @app.route("/find_peaks", methods=["POST"])
-def handle_peaks():
+def handle_peaks() -> dict[bool, dict[float, float], str]:
     data = json.loads(request.data)
 
     peaks = find_peaks(
