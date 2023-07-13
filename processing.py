@@ -3,14 +3,16 @@ from radis import SerialSlabs, Spectrum, calc_spectrum, MergeSlabs
 from specutils.fitting import find_lines_threshold
 from functions import zeroY, calc_wstep, multiscan, get_component_spectra
 
+from pydantic import ConfigDict, validate_arguments
+
 WAVEMIN = 400
 WAVEMAX = 12500
 
 # ------------------------------
 # ----- Spectrum Processing -----
 # ------------------------------
-def process_spectrum(params: dict[str, str, str, float, str, float, float, int, 
-                                  int, int, int, str, int], raw_spectrum: Spectrum) -> Spectrum:
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def process_spectrum(params: dict[str, object], raw_spectrum: Spectrum) -> Spectrum:
     """
     The following function takes a 'raw spectrum' generated using Radis's
     'calc_spectrum()' function and performing custom equations that virtualize
@@ -81,11 +83,12 @@ def process_spectrum(params: dict[str, str, str, float, str, float, float, int,
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
     spectrum = multiscan(spectrum, params["scan"])
-    spectrum.crop(params["waveMin"], params["waveMax"], inplace=True)
+    spectrum.crop(float(params["waveMin"]), float(params["waveMax"]), inplace=True)
     # return processed spectrum
     return spectrum
 
 
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
 def process_background(raw_spectrum: Spectrum) -> Spectrum:
     """
     Accepts a spectrum generated using '__generate_spectrum()'.
@@ -111,8 +114,8 @@ def process_background(raw_spectrum: Spectrum) -> Spectrum:
     return spec_zeroY
 
 
-def generate_spectrum(params: dict[str, str, str, float, str, float, 
-                     float, int, int, int, int, str, int]) -> tuple[Spectrum, bool, str]:
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def generate_spectrum(params: dict[str, object]) -> tuple[Spectrum, bool, str]:
     """
     Generates a spectrum using Radis's 'calc_spectrum()' function based
     on user parameters. That spectrum is then processed by
@@ -166,6 +169,7 @@ def generate_spectrum(params: dict[str, str, str, float, str, float,
     return (spectrum, False, None)
 
 
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
 def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float, 
                upperbound: float, threshold: float = 0) -> tuple[dict[float, float], str]:
     try:
