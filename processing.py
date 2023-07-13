@@ -151,14 +151,14 @@ def generate_spectrum(params: dict[str, str, str, float, str, float,
             mole_fraction={params["molecule"]: params["mole"]},
         )
     except radis.misc.warning.EmptyDatabaseError:
-        return None, True, "error: No line in the specified wavenumber range"
+        return None, True, "There were not enough data points in the requested Wavenumber Range. Please expand your range and try again."
     except Exception as e:
         match str(e):
             case "Failed to retrieve data for given parameters.":
                 return (
                     None,
                     True,
-                    "error: HITRAN data does not exist for requested molecule.",
+                    "There was an issue processing the data for the given parameters. Please adjust some settings and try again.",
                 )
             case other:
                 return None, True, str(e)
@@ -167,7 +167,7 @@ def generate_spectrum(params: dict[str, str, str, float, str, float,
 
 
 def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float, 
-               upperbound: float, threshold: float = 0) -> dict[float, float]:
+               upperbound: float, threshold: float = 0) -> tuple[dict[float, float], str]:
     try:
         spectrum = Spectrum.from_array(
             x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
@@ -177,8 +177,7 @@ def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float,
         )
         lines = find_lines_threshold(new_spec, noise_factor=1)
     except:
-        # TODO Add error message???
-        return None
+        return None, "Unable to find peaks with the given data and settings. Please adjust your settings and try again."
 
     peaks = {}
     for num, peak_type, _ in lines:
@@ -187,4 +186,4 @@ def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float,
             if peak_type == "emission" and y_data[index] >= threshold:
                 peaks[round(float(num.value), 4)] = round(y_data[index], 4)
 
-    return peaks
+    return peaks, None
