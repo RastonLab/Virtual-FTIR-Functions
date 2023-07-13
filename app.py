@@ -32,7 +32,7 @@ def spectrum() -> dict[bool, list[float], list[float]]:
     if not param_check(params):
         return {
             "success": False,
-            "text": "Parameter check failed",
+            "text": "One of the given parameters was invalid. Please change some settings and try again.",
         }
 
     # perform:
@@ -63,7 +63,6 @@ def spectrum() -> dict[bool, list[float], list[float]]:
 
 @app.route("/background", methods=["POST"])
 def background() -> dict[bool, list[float], list[float]]:
-    # try:
     # put incoming JSON into a dictionary
     data = json.loads(request.data)
 
@@ -71,7 +70,7 @@ def background() -> dict[bool, list[float], list[float]]:
     if not param_check(data):
         return {
             "success": False,
-            "text": "Parameter check failed",
+            "text": "One of the given parameters was invalid. Please change some settings and try again.",
         }
 
     # perform:
@@ -90,7 +89,7 @@ def background() -> dict[bool, list[float], list[float]]:
     except:
         return {
             "success": False,
-            "text": "Background Failure"
+            "text": "There was an issue collecting the background spectra."
         }
 
     # perform:
@@ -111,20 +110,14 @@ def background() -> dict[bool, list[float], list[float]]:
         "success": True,
         "x": list(x_value),
         "y": list(map(str, y_value)),
-    }
-      
-    # except:
-    #    return {
-    #         "success": False,
-    #         "text": "Issue Executing Scanning Procedures"
-    #     } 
+    } 
 
 
 @app.route("/find_peaks", methods=["POST"])
 def handle_peaks() -> dict[bool, dict[float, float], str]:
     data = json.loads(request.data)
 
-    peaks = find_peaks(
+    peaks, error = find_peaks(
         data["x"],
         data["y"],
         float(data["lowerbound"]),
@@ -132,10 +125,7 @@ def handle_peaks() -> dict[bool, dict[float, float], str]:
         float(data["threshold"]),
     )
 
-    if peaks:
-        return {"success": True, "peaks": peaks, "text": None}
-    else:
-        return {"success": False, "peaks": None, "text": "Failed to find peaks"}
+    return {"success": True, "peaks": peaks, "text": error}
 
 
 # set debug to false in production environment
