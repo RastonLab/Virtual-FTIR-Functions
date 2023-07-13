@@ -230,9 +230,7 @@ def zeroY(spectrum: np.ndarray) -> np.ndarray:
 
 
 @validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
-def param_check(params: 
-                dict[str, str, str, float, str, float, 
-                     float, int, int, int, int, str, int]) -> bool:
+def param_check(params: dict[str, object]) -> bool:
     """
     Parses user provided parameters for validity.
 
