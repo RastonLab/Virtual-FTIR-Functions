@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   docker: circleci/docker@2.2.0
 jobs:
-  build-and-push-release:
+  build-and-push:
     machine:
       image: ubuntu-2004:202101-01
       docker_layer_caching: false
@@ -10,18 +10,19 @@ jobs:
     steps:
       - run: |
           echo "export REPO_NAME=$(printf '%s\n' \"${CIRCLE_PROJECT_REPONAME,,}\")" >> $BASH_ENV && \
-          echo "export USER=$(printf '%s\n' \"${CIRCLE_PROJECT_USERNAME,,}\")" >> $BASH_ENV          
+          echo "export USER=$(printf '%s\n' \"${CIRCLE_PROJECT_USERNAME,,}\")" >> $BASH_ENV && \
+          echo "export IMAGE=$$USER/$$REPO_NAME:$${VERSION:-latest}" >> $BASH_ENV
       - checkout
       - docker/check:
           docker-username: CIRCLE_PROJECT_USERNAME
           registry: ghcr.io
       - docker/build:
-          image: $USER/$REPO_NAME:$VERSION
+          image: $IMAGE
           tag: latest
           registry: ghcr.io
       - docker/push:
           digest-path: /tmp/digest.txt
-          image: $USER/$REPO_NAME:$VERSION
+          image: $IMAGE
           tag: latest
           registry: ghcr.io
       - run:
@@ -30,7 +31,7 @@ jobs:
 workflows:
   build:
     jobs:
-      - build-and-push-release:
+      - build-and-push:
           filters:
             tags: # see: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
               only: /^\d+\.\d+\.\d+$/ #/(?<=^[Vv]|^)(?:(?<major>(?:0|[1-9](?:(?:0|[1-9])+)*))[.](?<minor>(?:0|[1-9](?:(?:0|[1-9])+)*))[.](?<patch>(?:0|[1-9](?:(?:0|[1-9])+)*))(?:-(?<prerelease>(?:(?:(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?|(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?)|(?:0|[1-9](?:(?:0|[1-9])+)*))(?:[.](?:(?:(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?|(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?)|(?:0|[1-9](?:(?:0|[1-9])+)*)))*))?(?:[+](?<build>(?:(?:(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?|(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?)|(?:(?:0|[1-9])+))(?:[.](?:(?:(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?|(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)(?:[A-Za-z]|-)(?:(?:(?:0|[1-9])|(?:[A-Za-z]|-))+)?)|(?:(?:0|[1-9])+)))*))?)$/
