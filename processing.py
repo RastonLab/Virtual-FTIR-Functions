@@ -22,14 +22,9 @@ def process_spectrum(params: dict[str, object], raw_spectrum: Spectrum) -> Spect
     approximate the behavior of FTIR components. Those spectra are then
     multiplied into the base spectrum.
 
-    All steps except pre-processing, Step A, and post-processing are repeated
-    a number of times given by the user. At the end of each loop, the spectrum
-    is normalized.
-
         Parameters:
             params (dict): The parameters provided by the user
             raw_spectrum (Spectrum object): The spectrum generated from 'calc_spectrum()'
-            find_peaks (boolean): Tells wether or not the find peaks algorithm should run
 
         Returns:
             The processed spectrum as a dictionary
@@ -91,7 +86,7 @@ def process_spectrum(params: dict[str, object], raw_spectrum: Spectrum) -> Spect
 # @validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
 def process_background(raw_spectrum: Spectrum) -> Spectrum:
     """
-    Accepts a spectrum generated using '__generate_spectrum()'.
+    Accepts a spectrum generated using 'generate_spectrum()'.
     A background by default has all y-values of one.
 
         Parameters:
@@ -119,7 +114,7 @@ def generate_spectrum(params: dict[str, object]) -> tuple[Spectrum, bool, str]:
     """
     Generates a spectrum using Radis's 'calc_spectrum()' function based
     on user parameters. That spectrum is then processed by
-    '__process_spectrum()'.
+    'process_spectrum()'.
 
     If there is an issue with the Radis library, the error message is returned.
 
