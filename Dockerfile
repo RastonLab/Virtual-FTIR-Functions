@@ -1,6 +1,6 @@
 FROM python:3.10-slim-bullseye as base
 
-RUN apt update && apt install wget tar -y
+RUN apt update && apt install wget tar git libpcrecpp0v5 -y
 
 WORKDIR /app
 
