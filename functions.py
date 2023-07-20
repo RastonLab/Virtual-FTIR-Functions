@@ -2,10 +2,13 @@ import numpy as np
 from radis.spectrum.operations import add_array
 from radis import Spectrum
 
+from pydantic import ConfigDict, validate_arguments
+
 # -------------------------------------
 # ------------- blackbody -------------
 # -------------------------------------
-def __sPlanck(spectrum, source_temp):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __sPlanck(spectrum: np.ndarray, source_temp: int) -> np.ndarray:
     """
     Calculates the y-values of a Blackbody spectrum.
 
@@ -27,7 +30,8 @@ def __sPlanck(spectrum, source_temp):
 # --------------------------------------
 # --------------- window ---------------
 # --------------------------------------
-def __CaF2(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __CaF2(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values for a CaF2 cell window.
 
@@ -41,7 +45,8 @@ def __CaF2(spectrum):
     return (0.93091) / (1 + (11.12929 / (10000 / spectrum)) ** -12.43933) ** 4.32574
 
 
-def __ZnSe(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __ZnSe(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values for a ZnSe cell window.
 
@@ -58,7 +63,8 @@ def __ZnSe(spectrum):
     ) * np.exp(-4 * np.log(2) * ((x_um - 16.75) ** 2) / (2.25051**2))
 
 
-def __sapphire(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __sapphire(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values for a sapphire window.
 
@@ -72,7 +78,8 @@ def __sapphire(spectrum):
     return 0.78928 / (1 + (11.9544 / (10000 / spectrum)) ** -12.07226) ** 6903.57039
 
 
-def __AR_ZnSe(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __AR_ZnSe(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values for a AR_ZnSe beamsplitter.
 
@@ -116,7 +123,8 @@ def __AR_ZnSe(spectrum):
     )
 
 
-def __AR_CaF2(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __AR_CaF2(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values for a AR_CaF2 beamsplitter.
 
@@ -160,7 +168,8 @@ def __AR_CaF2(spectrum):
 # --------------------------------------
 # -------------- detector --------------
 # --------------------------------------
-def __InSb(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __InSb(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values for an InSb detector.
 
@@ -179,7 +188,8 @@ def __InSb(spectrum):
     )
 
 
-def __MCT(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def __MCT(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values for a MCT detector.
 
@@ -205,7 +215,8 @@ def __MCT(spectrum):
 # -------------------------------------
 # ---------- helper functions ----------
 # ------------------------------------
-def zeroY(spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def zeroY(spectrum: np.ndarray) -> np.ndarray:
     """
     Calculates the y-values (y = 1) for background samples.
 
@@ -218,7 +229,8 @@ def zeroY(spectrum):
     return (spectrum * 0) + 1
 
 
-def param_check(params):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def param_check(params: dict[str, object]) -> bool:
     """
     Parses user provided parameters for validity.
 
@@ -259,7 +271,8 @@ def param_check(params):
     return True
 
 
-def calc_wstep(resolution, zero_fill):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def calc_wstep(resolution: float, zero_fill: int) -> float:
     """
     Calculates the appropriate wstep for a spectrum based on the given resolution and zero fill.
 
@@ -338,7 +351,8 @@ def calc_wstep(resolution, zero_fill):
 
     return wstep
 
-def multiscan(spectrum, num_scans):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def multiscan(spectrum: Spectrum, num_scans: int) -> Spectrum:
     # add random noise to spectrum
     #   https://radis.readthedocs.io/en/latest/source/radis.spectrum.operations.html#radis.spectrum.operations.add_array
     w = spectrum.get_wavenumber()
@@ -371,7 +385,11 @@ def multiscan(spectrum, num_scans):
 
     return spectrum
 
-def get_component_spectra(w, source_temp):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def get_component_spectra(w: np.ndarray, source_temp: int) -> tuple[Spectrum, Spectrum, 
+                                                                     Spectrum, Spectrum, 
+                                                                     Spectrum, Spectrum, 
+                                                                     Spectrum, Spectrum]:
     # processing for blackbody spectrum (sPlanck)
     spec_sPlanck = Spectrum(
         {"wavenumber": w, "transmittance_noslit": __sPlanck(w, source_temp)},

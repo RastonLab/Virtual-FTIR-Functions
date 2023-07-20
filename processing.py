@@ -3,13 +3,16 @@ from radis import SerialSlabs, Spectrum, calc_spectrum, MergeSlabs
 from specutils.fitting import find_lines_threshold
 from functions import zeroY, calc_wstep, multiscan, get_component_spectra
 
+from pydantic import ConfigDict, validate_arguments
+
 WAVEMIN = 400
 WAVEMAX = 12500
 
 # ------------------------------
 # ----- Spectrum Processing -----
 # ------------------------------
-def process_spectrum(params, raw_spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def process_spectrum(params: dict[str, object], raw_spectrum: Spectrum) -> Spectrum:
     """
     The following function takes a 'raw spectrum' generated using Radis's
     'calc_spectrum()' function and performing custom equations that virtualize
@@ -80,12 +83,13 @@ def process_spectrum(params, raw_spectrum):
     #   https://radis.readthedocs.io/en/latest/source/radis.los.slabs.html#radis.los.slabs.SerialSlabs
     spectrum = SerialSlabs(*slabs, modify_inputs="True")
     spectrum = multiscan(spectrum, params["scan"])
-    spectrum.crop(params["waveMin"], params["waveMax"], inplace=True)
+    spectrum.crop(float(params["waveMin"]), float(params["waveMax"]), inplace=True)
     # return processed spectrum
     return spectrum
 
 
-def process_background(raw_spectrum):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def process_background(raw_spectrum: Spectrum) -> Spectrum:
     """
     Accepts a spectrum generated using '__generate_spectrum()'.
     A background by default has all y-values of one.
@@ -110,7 +114,8 @@ def process_background(raw_spectrum):
     return spec_zeroY
 
 
-def generate_spectrum(params):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def generate_spectrum(params: dict[str, object]) -> tuple[Spectrum, bool, str]:
     """
     Generates a spectrum using Radis's 'calc_spectrum()' function based
     on user parameters. That spectrum is then processed by
@@ -149,22 +154,24 @@ def generate_spectrum(params):
             mole_fraction={params["molecule"]: params["mole"]},
         )
     except radis.misc.warning.EmptyDatabaseError:
-        return None, True, "error: No line in the specified wavenumber range"
+        return None, True, "There were not enough data points in the requested Wavenumber Range. Please expand your range and try again."
     except Exception as e:
         match str(e):
             case "Failed to retrieve data for given parameters.":
                 return (
                     None,
                     True,
-                    "error: HITRAN data does not exist for requested molecule.",
+                    "There was an issue processing the data for the given parameters. Please adjust some settings and try again.",
                 )
             case other:
                 return None, True, str(e)
 
-    return spectrum, False, None
+    return (spectrum, False, None)
 
 
-def find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
+@validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
+def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float, 
+               upperbound: float, threshold: float = 0) -> tuple[dict[float, float], str]:
     try:
         spectrum = Spectrum.from_array(
             x_data, y_data, "absorbance_noslit", wunit="cm-1", unit=""
@@ -174,7 +181,7 @@ def find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
         )
         lines = find_lines_threshold(new_spec, noise_factor=1)
     except:
-        return None
+        return None, "Unable to find peaks with the given data and settings. Please adjust your settings and try again."
 
     peaks = {}
     for num, peak_type, _ in lines:
@@ -183,4 +190,4 @@ def find_peaks(x_data, y_data, lowerbound, upperbound, threshold=0):
             if peak_type == "emission" and y_data[index] >= threshold:
                 peaks[round(float(num.value), 4)] = round(y_data[index], 4)
 
-    return peaks
+    return peaks, None
