@@ -1,6 +1,6 @@
 FROM python:3.10-slim-bullseye as base
 
-RUN apt update && apt install wget tar git libpcrecpp0v5 -y
+RUN apt update && apt install wget tar git -y
 
 WORKDIR /app
 
@@ -13,6 +13,8 @@ RUN tar -xvf virtual-ftir-functions-deps-$(uname -m)-py3.10.tar.gz -C /app/packa
 RUN pip3 install --no-index --find-links=/app/packages -r /app/scripts/requirements.txt
 
 FROM python:3.10-slim-bullseye
+
+RUN apt update && apt install libpcrecpp0v5 -y
 
 WORKDIR /app
 
