@@ -157,25 +157,43 @@ A note on vocabulary: in this documentation "ideal spectrum" means either a back
   - `__sPlanck`
 
     - Globar
+    
+      ![Blackbody-Globar](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/689da3ff-5637-484f-9cd8-6bb5497e86ad)
 
     - Tungsten
+   
+      ![Blackbody-Tungsten](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/bda16a62-1397-458a-8eb6-8f655e647c0e)
 
 - Cell Windows
 
   - `__CaF2`
 
-  - `__ZnSe`
+    ![Window-CaF2](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/a8a18cbb-a31a-4432-acaa-78451c4c5cfd)
 
-- Beamspillters
+  - `__ZnSe`
+ 
+    ![Window-ZnSe](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/3b9147eb-a6cc-4342-a26b-1afec82bdff2)
+
+- Beamsplitters
 
   - `AR_ZnSe`
+ 
+    ![Beamsplitter-AR_ZnSe](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/1570ba60-44a1-4afe-92e1-a003704bb256)
 
   - `AR_CaF2`
+ 
+    ![Beamsplitter-AR_CaF2](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/839c9b70-7c14-42f4-81f5-d4a0a98bf205)
 
 - Detector
 
   - `__InSb`
+ 
+    ![Detector-InSb](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/461d479f-e6be-4e49-841a-60f630a70c5b)
 
     - `__sapphire`
+   
+      ![Sapphire](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/673cbf31-2bd7-4949-9954-7dcca95881f2)
 
   - `__MCT`
+ 
+    ![Detector-MCT](https://github.com/Brennaser/Virtual-FTIR-Functions/assets/54820278/7ad8a7ed-90cd-4f92-a869-79b8265f7480)
