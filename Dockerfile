@@ -21,7 +21,7 @@ COPY --from=base /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.
 
 COPY --from=base /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 
-COPY ./*.py .
+COPY ./*.py /app/
 
 COPY ./scripts/download_htran.py .
 
