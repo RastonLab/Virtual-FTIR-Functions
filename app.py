@@ -16,12 +16,18 @@ from functions import param_check
 
 app = Flask(__name__)
 CORS(app)
-
+try:
+	with open("version.txt","r") as f:
+		version = f.read()
+		app.config["VERSION"] = version
+except:
+     print("no version file found")
 
 @app.route("/", methods=["GET"])
 def ftir() -> str:
-    return "<h1 style='color:blue'>Raston Lab FTIR API</h1>"
-
+    if "VERSION" not in app.config:
+      app.config["VERSION"] = "0.0.0"
+    return "<h1 style='color:blue'>Raston Lab FTIR API%s</h1>" % (" - Version "+app.config["VERSION"])
 
 @app.route("/spectrum", methods=["POST"])
 def spectrum() -> dict[bool, list[float], list[float]]:

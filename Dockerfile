@@ -23,6 +23,8 @@ COPY --from=base /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 
 COPY ./*.py /app/
 
+COPY ./*.txt /app/
+
 COPY ./scripts/download_hitran.py .
 
 CMD gunicorn --bind 0.0.0.0:5000 wsgi:app
