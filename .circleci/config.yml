@@ -8,25 +8,26 @@ jobs:
       docker_layer_caching: false
     resource_class: arm.medium
     steps:
+      - checkout
       - run: 
-          name: Setup Custom Environment Variables
+          name: Setup Custom Environment Variables & Add Version
           command: |
             echo "export REPO_NAME=$(printf '%s\n' \"${CIRCLE_PROJECT_REPONAME,,}\")" >> $BASH_ENV && \
             echo "export USER=$(printf '%s\n' \"${CIRCLE_PROJECT_USERNAME,,}\")" >> $BASH_ENV && \
-            echo "export VERSION=$CIRCLE_TAG" >> $BASH_ENV && \
-            echo "export TIMESTAMP=$(date --rfc-3339=seconds | sed 's/[ :+]/-/g')" >> $BASH_ENV
-      - checkout
+            export VERSION=${CIRCLE_TAG:-NIGHTLY.$(date --rfc-3339=seconds | sed 's/[ :+]/-/g')} && \
+            echo "export VERSION=$VERSION" >> $BASH_ENV && \
+            echo $VERSION > version.txt
       - docker/check:
           docker-username: CIRCLE_PROJECT_USERNAME
           registry: ghcr.io
       - docker/build:
           image: $USER/$REPO_NAME
-          tag: ${VERSION:-NIGHTLY.$TIMESTAMP}
+          tag: $VERSION
           registry: ghcr.io
       - docker/push:
           digest-path: /tmp/digest.txt
           image: $USER/$REPO_NAME
-          tag: ${VERSION:-NIGHTLY.$TIMESTAMP}
+          tag: $VERSION
           registry: ghcr.io
       - run:
           command: |
