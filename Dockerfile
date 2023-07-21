@@ -21,6 +21,8 @@ COPY --from=base /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.
 
 COPY --from=base /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 
-COPY ./*.py /app/
+COPY ./*.py .
+
+COPY ./scripts/download_htran.py .
 
 CMD gunicorn --bind 0.0.0.0:5000 wsgi:app
