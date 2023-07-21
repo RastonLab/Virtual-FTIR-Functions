@@ -1,6 +1,6 @@
 FROM python:3.10-slim-bullseye as base
 
-RUN apt update && apt install wget tar -y
+RUN apt update && apt install wget tar git libpcrecpp0v5 -y
 
 WORKDIR /app
 
@@ -22,5 +22,7 @@ COPY --from=base /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.
 COPY --from=base /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 
 COPY ./*.py /app/
+
+COPY ./scripts/download_hitran.py .
 
 CMD gunicorn --bind 0.0.0.0:5000 wsgi:app
