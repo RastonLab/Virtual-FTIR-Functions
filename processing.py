@@ -1,7 +1,7 @@
 import radis
 from radis import SerialSlabs, Spectrum, calc_spectrum, MergeSlabs
 from specutils.fitting import find_lines_threshold
-from functions import zeroY, calc_wstep, multiscan, get_component_spectra
+from processing_utils import zeroY, calc_wstep, multiscan, get_component_spectra
 
 from pydantic import ConfigDict, validate_arguments
 
@@ -84,7 +84,7 @@ def process_spectrum(params: dict[str, object], raw_spectrum: Spectrum) -> Spect
 
 
 # @validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
-def process_background(raw_spectrum: Spectrum) -> Spectrum:
+def generate_background(raw_spectrum: Spectrum) -> Spectrum:
     """
     Accepts a spectrum generated using 'generate_spectrum()'.
     A background by default has all y-values of one.
