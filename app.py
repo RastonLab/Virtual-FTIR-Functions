@@ -8,11 +8,11 @@ from flask import Flask, request
 from flask_cors import CORS
 from processing import (
     generate_spectrum,
-    process_background,
+    generate_background,
     process_spectrum,
     find_peaks
 )
-from functions import param_check
+from processing_utils import param_check
 
 app = Flask(__name__)
 CORS(app)
@@ -85,7 +85,7 @@ def background() -> dict[bool, list[float], list[float]]:
     # perform:
     #   --> set all y-values to one
     try:
-        background_spectrum = process_background(spectrum)
+        background_spectrum = generate_background(spectrum)
     except:
         return {
             "success": False,
