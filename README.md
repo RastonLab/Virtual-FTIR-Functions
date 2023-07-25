@@ -27,77 +27,95 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
   - This script downloads HITRAN data files locally. This is useful so the Flask application doesn't need to download data files during user queries.
 
-- `virtual_environment.sh`
-
-  - This script creates a virtual python environments (venv) needed to run `app.py`. The script uses `requirements.txt` to install the required dependencies to a venv that is used for both directories. To activate the virtual environment (if your editor or terminal does not automatically activate it), run `source venv/bin/activate`. To deactivate the virtual environment, run `deactivate` in the terminal.
-    - NOTE: This script is designed to be run from outside the `scripts` directory.
-
----
-
 ## How to Run
 
-1. Create and setup the Python virtual environment:
+### Method One - VS Code Dev Containers
 
-   ```
-   ./script/virtual_environment.sh
-   ```
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-2. Activate the virtual environment:
+2. Install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) Visual Studio Code extension
 
-   ```
-   source venv/bin/activate
-   ```
+3. Clone this repository
 
-3. To run the Flask application:
+4. Open the repository in a Dev Container. When opened, all dependencies will be automatically installed. This installation process does not repeat unless one of the `.devcontainer` configuration files change or it is manually triggered (`Dev Containers: Rebuild Container`)
 
-   ```
-   python app.py
+    1. **(Option 1)** Open the repository in VS Code either in your native OS or WSL. Once open, in the bottom-right, a message should appear prompting the user to open the repository in a container.
+
+    2. **(Option 2)** Open the `Command Palette`, search and select the option: `Dev Containers: Open Folder in Container...`. Navigate and select the cloned repository's directory.
+
+5. Run the application:
+
+   ```sh
+   python3 app.py
    ```
 
    or
 
-   ```
-   python wsgi.py
+   ```sh
+   python3 wsgi.py
    ```
 
-    - To run the Flask application in debug mode, run
+    - To run the application in debug mode, run:
 
       ```
-      python wsgi.py debug
+      python3 wsgi.py debug
       ```
 
-**NOTE**: Make sure in the frontend that `src/routes/ExperimentalSetup.jsx` has the proper fetch URLs uncommented: https://github.com/RastonLab/Virtual-FTIR-Spectrometer/blob/main/src/routes/ExperimentalSetup.jsx
+6. To deactivate the virtual environment:
 
----
+    ```sh
+    deactivate
+    ```
 
-## Flask Test Query
+### Method Two - Python Virtual Environment
 
-- `cURL`
+1. Create a python virtual environment:
 
-  - This cURL command has be used in a terminal to test the applications ability to properly return the X and Y coordinates.
+   ```sh
+   python3 -m venv venv
+   ```
 
-  ```
-  curl -X POST localhost:5000/spectrum \
-      -H "Content-type: application/json" \
-      -d "{ \
-          \"minWave\" : 1900, \
-          \"maxWave\" : 2300, \
-          \"molecule\" : \"CO\", \
-          \"pressure\" : 0.01, \
-          \"resolution\" : 1, \
-          \"numScan\" : 1, \
-          \"zeroFill\" : 0, \
-          \"source\" : 3100, \
-          \"beamsplitter\" : \"AR_ZnSe\", \
-          \"cellWindow\" : \"CaF2\", \
-          \"detector\" : \"MCT\" \
-      }"
-  ```
----
+2. Activate the virtual environment:
 
-**A note on vocabulary:** in this documentation "ideal spectrum" means either a background or sample spectrum with no noise and is unaffected by the physical components of the spectrometer.
+   ```sh
+   source venv/bin/activate
+   ```
+
+3. Install dependencies from `requirements.txt`:
+
+    ```sh
+    pip3 install -r ./scripts/requirements.txt
+    ```
+
+4. Run the application:
+
+   ```sh
+   python3 app.py
+   ```
+
+   or
+
+   ```sh
+   python3 wsgi.py
+   ```
+
+    - To run the application in debug mode, run:
+
+      ```
+      python3 wsgi.py debug
+      ```
+
+5. To deactivate the virtual environment:
+
+    ```sh
+    deactivate
+    ```
+
+**NOTE**: Make sure in the frontend that `src/dictionaries/constants.js` has the proper fetch URLs uncommented.
 
 ## The Process - Breakdown of App.py
+
+**A note on vocabulary:** in this documentation "_ideal spectrum_" means either a background or sample spectrum with no noise and is unaffected by the physical components of the spectrometer.
 
 <!-- TODO describe the parameters for each POST Request -->
 There are two sets of parameters the server can receive based on what request is being made. If the request is for Spectrum or Background, the parameters will include:
