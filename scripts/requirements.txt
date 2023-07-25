@@ -7,6 +7,3 @@ flask
 flask-cors
 wheel
 gunicorn
-
-# formatting
-black
