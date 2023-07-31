@@ -199,11 +199,9 @@ def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float,
     peaks = {}
     for num, peak_type, _ in lines:
         index = x_data.index(float(num.value))
-        # Makes sure the peak is within bounds
-        if x_data[index] >= lowerbound and x_data[index] <= upperbound:
-            # Makes sure the peak is an emmission peak and is at or obove our threshold
-            if peak_type == "emission" and y_data[index] >= threshold:
-                peaks[round(float(num.value), 4)] = round(y_data[index], 4)
+        # Makes sure the peak is an emmission peak and is at or obove our threshold
+        if peak_type == "emission" and y_data[index] >= threshold:
+            peaks[round(float(num.value), 4)] = round(y_data[index], 4)
 
     # Return the data that matches our specifications
     return peaks, None
