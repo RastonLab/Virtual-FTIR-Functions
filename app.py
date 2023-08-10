@@ -122,6 +122,7 @@ def background() -> dict[bool, list[float], list[float]]:
 
 
 @app.route("/find_peaks", methods=["POST"])
+@cross_origin(origins=['http://localhost:3000', 'https://ftir.rastonlab.org'])
 def handle_peaks() -> dict[bool, dict[float, float], str]:
     data = json.loads(request.data)
 
