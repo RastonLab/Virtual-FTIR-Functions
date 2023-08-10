@@ -5,7 +5,7 @@
 import json
 
 from flask import Flask, request
-from flask_cors import CORS
+from flask_cors import cross_origin
 from processing import (
     generate_spectrum,
     generate_background,
@@ -15,7 +15,6 @@ from processing import (
 from processing_utils import param_check
 
 app = Flask(__name__)
-CORS(app)
 try:
 	with open("version.txt","r") as f:
 		version = f.read()
@@ -24,12 +23,14 @@ except:
      print("no version file found")
 
 @app.route("/", methods=["GET"])
+@cross_origin()
 def ftir() -> str:
     if "VERSION" not in app.config:
       app.config["VERSION"] = "0.0.0"
     return "<h1 style='color:blue'>Raston Lab FTIR API%s</h1>" % (" - Version "+app.config["VERSION"])
 
 @app.route("/spectrum", methods=["POST"])
+@cross_origin(origins=['http://localhost:3000', 'https://ftir.rastonlab.org'])
 def spectrum() -> dict[bool, list[float], list[float]]:
     # put incoming JSON into a dictionary
     params = json.loads(request.data)
@@ -68,6 +69,7 @@ def spectrum() -> dict[bool, list[float], list[float]]:
 
 
 @app.route("/background", methods=["POST"])
+@cross_origin(origins=['http://localhost:3000', 'https://ftir.rastonlab.org'])
 def background() -> dict[bool, list[float], list[float]]:
     # put incoming JSON into a dictionary
     data = json.loads(request.data)
