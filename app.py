@@ -134,7 +134,10 @@ def handle_peaks() -> dict[bool, dict[float, float], str]:
         float(data["threshold"]),
     )
 
-    return {"success": True, "peaks": peaks, "text": error}
+    if (peaks): 
+        return {"success": True, "peaks": peaks, "text": error}
+
+    return {"success": False, "peaks": peaks, "text": error}
 
 
 # set debug to false in production environment
