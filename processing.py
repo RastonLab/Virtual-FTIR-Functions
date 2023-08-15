@@ -165,16 +165,13 @@ def generate_spectrum(params: dict[str, object]) -> tuple[Spectrum, bool, str]:
 
 
 # @validate_arguments(config=ConfigDict(strict=True, arbitrary_types_allowed=True))
-def find_peaks(x_data: list[float], y_data: list[float], lowerbound: float, 
-               upperbound: float, threshold: float = 0) -> tuple[dict[float, float], str]:
+def find_peaks(x_data: list[float], y_data: list[float], threshold: float = 0) -> tuple[dict[float, float], str]:
     '''
     Finds the peaks in provided data within a certain range and threshold.
 
         Parameters:
             x_data (list[float]): the x-values of the data to analyze
             y_data (list[float]): the y-values of the data to analyze
-            lowerbound (float): the lowest x-value to analyze
-            upperbound (float): the highest x-value to analyze
             threshold (float): the lowest y-value to concider a peak
 
         Returns:
