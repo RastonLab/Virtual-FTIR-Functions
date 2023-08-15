@@ -126,8 +126,6 @@ def handle_peaks() -> dict[bool, dict[float, float], str]:
     peaks, error = find_peaks(
         data["x"],
         data["y"],
-        float(data["lowerbound"]),
-        float(data["upperbound"]),
         float(data["threshold"]),
     )
 
