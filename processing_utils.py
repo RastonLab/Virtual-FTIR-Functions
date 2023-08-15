@@ -1,8 +1,14 @@
 import numpy as np
+import warnings
+
 from radis.spectrum.operations import add_array
 from radis import Spectrum
 
 from pydantic import ConfigDict, validate_arguments
+
+# filters out specific warning messages
+warnings.filterwarnings("ignore", message="invalid value encountered in power")
+warnings.filterwarnings("ignore", message="overflow encountered in power")
 
 # -------------------------------------
 # ------------- blackbody -------------
