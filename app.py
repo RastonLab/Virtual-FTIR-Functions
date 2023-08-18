@@ -29,8 +29,8 @@ def ftir() -> str:
       app.config["VERSION"] = "0.0.0"
     return "<h1 style='color:blue'>Raston Lab FTIR API%s</h1>" % (" - Version "+app.config["VERSION"])
 
-@app.route("/spectrum", methods=["POST"])
-def spectrum() -> dict[bool, list[float], list[float]]:
+@app.route("/sample", methods=["POST"])
+def sample() -> dict[bool, list[float], list[float]]:
     # put incoming JSON into a dictionary
     params = json.loads(request.data)
 
