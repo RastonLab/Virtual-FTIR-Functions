@@ -19,7 +19,7 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
 - `processing_utils.py`
 
-  - This utility module contains helper functions for the `processing.py` module. These functions include functions to approxiamate physical components of an FTIR Spectrometer, approximate realistic noise, check user parameters, and calculate the resolution of the spectra. Find more details about the individual functions [here](#functionspy-functions).
+  - This utility module contains helper functions for the `processing.py` module. These functions include functions to approxiamate physical components of an FTIR Spectrometer, approximate realistic noise, check user parameters, and calculate the resolution of the spectra. Find more details about the individual functions [here](#processing_utilspy-functions).
 
 ## Scripts
 
@@ -147,9 +147,9 @@ For Find Peaks requests, the parameters will include:
 ```
 `x-data` and `y-data` contain the x and y-values for the spectrum to analyze. `lowerbound` gives the lowest x-value in the range to analyze; `upperbpund` gives the higest x-value in the range to analyze. `threshold` gives the lowest y-value to consider a 'peak' in the data.
 
-- Spectrum
+- Sample
 
-  - Spectrum recives a list of parameters from the POST Request in the form of a JSON. After running some basic [parameter checking](#param_check), Spectrum calls `generate_spectrum`. This function returns an ideal spectrum in the form of a RADIS Spectrum object based on the user selected parameters. This ideal spectrum is then passed to the `process_spectrum` function which alters the spectrum to more closly resemble a realistic spectrum. For more detail on this function, go [here](#process_spectrum). Then the x and y values from the resulting spectrum are sent back to the user.
+  - Sample recives a list of parameters from the POST Request in the form of a JSON. After running some basic [parameter checking](#param_check), Sample calls `generate_spectrum`. This function returns an ideal spectrum in the form of a RADIS Spectrum object based on the user selected parameters. This ideal spectrum is then passed to the `process_spectrum` function which alters the spectrum to more closly resemble a realistic spectrum. For more detail on this function, go [here](#process_spectrum). Then the x and y values from the resulting spectrum are sent back to the user.
 
 - Background
 
@@ -177,7 +177,7 @@ For Find Peaks requests, the parameters will include:
 
 #### `find_peaks`
 
-  - This function takes the x and y-values of a spectrum and finds all the peaks in the data using [RADIS tools](https://specutils.readthedocs.io/en/stable/api/specutils.fitting.find_lines_threshold.html#specutils.fitting.find_lines_threshold). Then the desired (emmission) peaks are returned from that data based on the provided range (`lowerbound`-`upperbound`) and the minimum value for a y-value to be considered a peak (`threshold`).
+  - This function takes the x and y-values of a spectrum and finds all the peaks in the data using [RADIS tools](https://specutils.readthedocs.io/en/stable/api/specutils.fitting.find_lines_threshold.html#specutils.fitting.find_lines_threshold). Then the desired (emmission) peaks are returned from that data based on the minimum value for a y-value to be considered a peak (`threshold`).
 
 ---
 
