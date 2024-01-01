@@ -27,7 +27,7 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
   - This script downloads HITRAN data files locally. This is useful so the Flask application doesn't need to download data files during user queries.
 
-## How to Run
+## How to Run Locally
 
 ### Method One - VS Code Dev Containers
 
@@ -69,25 +69,27 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
 ### Method Two - Python Virtual Environment
 
-1. Create a python virtual environment:
+1. Clone this repository
+
+2. Create a python virtual environment:
 
    ```sh
    python3 -m venv venv
    ```
 
-2. Activate the virtual environment:
+3. Activate the virtual environment:
 
    ```sh
    source venv/bin/activate
    ```
 
-3. Install dependencies from `requirements.txt`:
+4. Install dependencies from `requirements.txt`:
 
     ```sh
     pip3 install -r ./scripts/requirements.txt
     ```
 
-4. Run the application:
+5. Run the application:
 
    ```sh
    python3 app.py
@@ -105,10 +107,64 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
       python3 wsgi.py debug
       ```
 
-5. To deactivate the virtual environment:
+6. To deactivate the virtual environment:
 
     ```sh
     deactivate
+    ```
+
+### Method Three - Docker Container
+
+1. Clone repository
+
+2. Create image
+
+    ```bash
+    docker build -t ftir-api .
+    ```
+
+3. Build container
+
+    ```bash
+    docker run -p 5000:5000 --name back-end ftir-api
+    ```
+
+    Additional commands
+
+    - List containers
+
+        ```bash
+        docker ps -a
+        ```
+
+    - Stop container
+
+        ```bash
+        docker stop [NAME]
+        ```
+
+    - Delete container
+
+        ```bash
+        docker rm [NAME]
+        ```
+
+    - List images
+
+        ```bash
+        docker images
+        ```
+
+    - Delete image
+
+        ```bash
+        docker image rm [IMAGE-ID]
+        ```
+
+4. Visit localhost to test
+
+    ```bash
+    http://localhost:5000/
     ```
 
 **NOTE**: Make sure in the frontend that `src/dictionaries/constants.js` has the proper fetch URLs uncommented.
