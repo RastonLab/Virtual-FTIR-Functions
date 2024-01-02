@@ -29,7 +29,7 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
 ## Installation
 
-Information on how to run the front-end can be found in the repository's [wiki page](../../wiki).
+Information on how to run the back-end can be found in the repository's [wiki page](../../wiki).
 
 > **NOTE**: Make sure in the frontend that `src/dictionaries/constants.js` has the proper fetch URLs uncommented.
 
