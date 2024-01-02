@@ -27,7 +27,7 @@ This repository contains the back-end of the [Virtual FTIR Spectrometer](https:/
 
   - This script downloads HITRAN data files locally. This is useful so the Flask application doesn't need to download data files during user queries.
 
-## How to Run Locally
+## Installation
 
 Information on how to run the front-end can be found in the repository's [wiki page](../../wiki).
 
